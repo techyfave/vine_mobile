@@ -1,0 +1,4023 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Vine API",
+    "version": "1.0",
+    "description": "Vine — Christian social platform API"
+  },
+  "paths": {
+    "/api/v1/meta/": {
+      "get": {
+        "operationId": "api_v1_router_meta",
+        "summary": "Meta",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Public client bootstrap info: minimum app versions and server capabilities.",
+        "tags": [
+          "Meta"
+        ]
+      }
+    },
+    "/api/v1/auth/register/": {
+      "post": {
+        "operationId": "apps_identity_api_register",
+        "summary": "Register",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Create an account and sign in. A verification code is emailed immediately.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/login/": {
+      "post": {
+        "operationId": "apps_identity_api_login",
+        "summary": "Login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/refresh/": {
+      "post": {
+        "operationId": "apps_identity_api_refresh",
+        "summary": "Refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Exchange the current refresh token for a new pair. Each refresh token works once.\n\nClients must run refreshes one at a time and always store the newest refresh token.\nRe-using an old token signs the device out (it indicates the token was copied).",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/logout/": {
+      "post": {
+        "operationId": "apps_identity_api_logout",
+        "summary": "Logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Sign out this device.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout-all/": {
+      "post": {
+        "operationId": "apps_identity_api_logout_all",
+        "summary": "Logout All",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Sign out every device, including this one.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/": {
+      "get": {
+        "operationId": "apps_identity_api_list_sessions",
+        "summary": "List Sessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Devices currently signed in to this account.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{session_id}/": {
+      "delete": {
+        "operationId": "apps_identity_api_revoke_session",
+        "summary": "Revoke Session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/email/verify/request/": {
+      "post": {
+        "operationId": "apps_identity_api_request_email_verification",
+        "summary": "Request Email Verification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/email/verify/confirm/": {
+      "post": {
+        "operationId": "apps_identity_api_confirm_email_verification",
+        "summary": "Confirm Email Verification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/request/": {
+      "post": {
+        "operationId": "apps_identity_api_password_reset_request",
+        "summary": "Password Reset Request",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Always returns 202, whether or not the email has an account.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequestSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/password/reset/confirm/": {
+      "post": {
+        "operationId": "apps_identity_api_password_reset_confirm",
+        "summary": "Password Reset Confirm",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Set a new password with the emailed code. Signs out every device.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirmSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/password/change/": {
+      "post": {
+        "operationId": "apps_identity_api_password_change",
+        "summary": "Password Change",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Change password. This device stays signed in; all others are signed out.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChangeSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/push-devices/": {
+      "put": {
+        "operationId": "apps_identity_api_register_push_device",
+        "summary": "Register Push Device",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Register or refresh this installation's Expo push token. Safe to call on every app start.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushDeviceSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/push-devices/{installation_id}/": {
+      "delete": {
+        "operationId": "apps_identity_api_unregister_push_device",
+        "summary": "Unregister Push Device",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "installation_id",
+            "schema": {
+              "title": "Installation Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/account/delete/": {
+      "post": {
+        "operationId": "apps_identity_api_delete_account",
+        "summary": "Delete Account",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Deactivate the account now and permanently delete it after the grace period.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeleteSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/": {
+      "get": {
+        "operationId": "apps_users_api_get_me",
+        "summary": "Get Me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_users_api_update_me",
+        "summary": "Update Me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Update profile fields (JSON). Images use the dedicated upload endpoints.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/avatar/": {
+      "post": {
+        "operationId": "apps_users_api_upload_avatar",
+        "summary": "Upload Avatar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/cover/": {
+      "post": {
+        "operationId": "apps_users_api_upload_cover",
+        "summary": "Upload Cover",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/groups/": {
+      "get": {
+        "operationId": "apps_users_api_my_groups",
+        "summary": "My Groups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/blocked/": {
+      "get": {
+        "operationId": "apps_users_api_my_blocked",
+        "summary": "My Blocked",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_FollowEntrySchema_"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/muted/": {
+      "get": {
+        "operationId": "apps_users_api_my_muted",
+        "summary": "My Muted",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_FollowEntrySchema_"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/search/": {
+      "get": {
+        "operationId": "apps_users_api_search_users",
+        "summary": "Search Users",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicUserSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/": {
+      "get": {
+        "operationId": "apps_users_api_get_profile",
+        "summary": "Get Profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/follow/": {
+      "post": {
+        "operationId": "apps_users_api_follow",
+        "summary": "Follow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_users_api_unfollow",
+        "summary": "Unfollow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/block/": {
+      "post": {
+        "operationId": "apps_users_api_block",
+        "summary": "Block",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Block a user: removes follows both ways and hides each of you from the other.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_users_api_unblock",
+        "summary": "Unblock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/mute/": {
+      "post": {
+        "operationId": "apps_users_api_mute",
+        "summary": "Mute",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Hide a user's posts from your feeds without them knowing.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_users_api_unmute",
+        "summary": "Unmute",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/followers/": {
+      "get": {
+        "operationId": "apps_users_api_followers",
+        "summary": "Followers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_FollowEntrySchema_"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{username}/following/": {
+      "get": {
+        "operationId": "apps_users_api_following",
+        "summary": "Following",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_FollowEntrySchema_"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/": {
+      "post": {
+        "operationId": "apps_feed_api_create_post_endpoint",
+        "summary": "Create Post Endpoint",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "upload",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "binary",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Upload"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "title": "FormParams",
+                "type": "object",
+                "properties": {
+                  "visibility": {
+                    "default": "public",
+                    "enum": [
+                      "public",
+                      "followers",
+                      "page",
+                      "group"
+                    ],
+                    "title": "Visibility",
+                    "type": "string"
+                  },
+                  "post_type": {
+                    "default": "text",
+                    "enum": [
+                      "text",
+                      "image",
+                      "scripture"
+                    ],
+                    "title": "Post Type",
+                    "type": "string"
+                  },
+                  "content": {
+                    "default": "",
+                    "maxLength": 10000,
+                    "title": "Content",
+                    "type": "string"
+                  },
+                  "scripture_reference": {
+                    "default": "",
+                    "maxLength": 120,
+                    "title": "Scripture Reference",
+                    "type": "string"
+                  },
+                  "page_slug": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Page Slug"
+                  },
+                  "group_slug": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Group Slug"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/": {
+      "get": {
+        "operationId": "apps_feed_api_feed_timeline",
+        "summary": "Feed Timeline",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Chronological home feed: the viewer's own posts and posts from people they follow (minus muted).",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/": {
+      "get": {
+        "operationId": "apps_feed_api_get_post_endpoint",
+        "summary": "Get Post Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_feed_api_patch_post_endpoint",
+        "summary": "Patch Post Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_feed_api_soft_delete_post",
+        "summary": "Soft Delete Post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/react/": {
+      "post": {
+        "operationId": "apps_feed_api_react_endpoint",
+        "summary": "React Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReactionBodySchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_feed_api_unreact_endpoint",
+        "summary": "Unreact Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/reactions/": {
+      "get": {
+        "operationId": "apps_feed_api_reactions_summary",
+        "summary": "Reactions Summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/comments/": {
+      "get": {
+        "operationId": "apps_feed_api_comments_list_endpoint",
+        "summary": "Comments List Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_CommentSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Comments oldest-first (conversation order), cursor-paginated.",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_feed_api_comments_create_endpoint",
+        "summary": "Comments Create Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/comments/{comment_id}/": {
+      "delete": {
+        "operationId": "apps_feed_api_delete_comment_endpoint",
+        "summary": "Delete Comment Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "comment_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Comment Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/share/": {
+      "post": {
+        "operationId": "apps_feed_api_share_post_endpoint",
+        "summary": "Share Post Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareBodySchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/bookmark/": {
+      "post": {
+        "operationId": "apps_feed_api_bookmark_add",
+        "summary": "Bookmark Add",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_feed_api_bookmark_remove",
+        "summary": "Bookmark Remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/bookmarks/": {
+      "get": {
+        "operationId": "apps_feed_api_bookmarks_feed",
+        "summary": "Bookmarks Feed",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Bookmarked posts the viewer can still see (deleted or now-private posts drop out).",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/explore/": {
+      "get": {
+        "operationId": "apps_feed_api_explore_feed",
+        "summary": "Explore Feed",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Public posts from people the viewer doesn't follow, newest first.\n\nDeliberately simple until ranking is designed (see roadmap §8A): sorting by a\nlive reaction COUNT across all posts doesn't scale and isn't explainable.",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/": {
+      "post": {
+        "operationId": "apps_pages_api_create_page",
+        "summary": "Create Page",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_pages_api_page_list_public",
+        "summary": "Page List Public",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/": {
+      "get": {
+        "operationId": "apps_pages_api_page_detail_public",
+        "summary": "Page Detail Public",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_pages_api_page_update",
+        "summary": "Page Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagePatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/join": {
+      "post": {
+        "operationId": "apps_pages_api_page_join",
+        "summary": "Page Join",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/members/{user_id}": {
+      "patch": {
+        "operationId": "apps_pages_api_moderate_member",
+        "summary": "Moderate Member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Approve/ban members and change roles.\n\nRules (prevents privilege escalation):\n- Moderators may only change the status of plain members; they cannot change roles.\n- Admins may change status and roles, but only the Page owner may grant or remove admin.\n- Nobody can modify the Page owner or their own membership here.",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberPatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/members": {
+      "get": {
+        "operationId": "apps_pages_api_page_members",
+        "summary": "Page Members",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/feed": {
+      "get": {
+        "operationId": "apps_pages_api_page_feed",
+        "summary": "Page Feed",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Posts published to this Page that the viewer may see (public posts, plus members-only for members).",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/events": {
+      "post": {
+        "operationId": "apps_pages_api_page_event_create",
+        "summary": "Page Event Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_pages_api_page_events",
+        "summary": "Page Events",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/events/{event_id}": {
+      "get": {
+        "operationId": "apps_pages_api_page_event_detail",
+        "summary": "Page Event Detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/announcements": {
+      "post": {
+        "operationId": "apps_pages_api_announcements_create",
+        "summary": "Announcements Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnounceCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_pages_api_announcements_list",
+        "summary": "Announcements List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TokenSchema": {
+        "properties": {
+          "access": {
+            "title": "Access",
+            "type": "string"
+          },
+          "refresh": {
+            "title": "Refresh",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "access_expires_in": {
+            "description": "Seconds until the access token expires",
+            "title": "Access Expires In",
+            "type": "integer"
+          },
+          "email_verified": {
+            "title": "Email Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "access",
+          "refresh",
+          "session_id",
+          "access_expires_in",
+          "email_verified"
+        ],
+        "title": "TokenSchema",
+        "type": "object"
+      },
+      "DetailSchema": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "DetailSchema",
+        "type": "object"
+      },
+      "DeviceSchema": {
+        "properties": {
+          "platform": {
+            "default": "other",
+            "enum": [
+              "ios",
+              "android",
+              "web",
+              "other"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
+          "device_name": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Device Name",
+            "type": "string"
+          },
+          "app_version": {
+            "default": "",
+            "maxLength": 32,
+            "title": "App Version",
+            "type": "string"
+          },
+          "installation_id": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Installation Id",
+            "type": "string"
+          }
+        },
+        "title": "DeviceSchema",
+        "type": "object"
+      },
+      "RegisterSchema": {
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 30,
+            "minLength": 3,
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "confirm_password": {
+            "maxLength": 128,
+            "title": "Confirm Password",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeviceSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "username",
+          "password",
+          "confirm_password"
+        ],
+        "title": "RegisterSchema",
+        "type": "object"
+      },
+      "LoginSchema": {
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "title": "Password",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeviceSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginSchema",
+        "type": "object"
+      },
+      "RefreshSchema": {
+        "properties": {
+          "refresh": {
+            "maxLength": 2048,
+            "title": "Refresh",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ],
+        "title": "RefreshSchema",
+        "type": "object"
+      },
+      "SessionSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "device_name": {
+            "title": "Device Name",
+            "type": "string"
+          },
+          "app_version": {
+            "title": "App Version",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "last_used_at": {
+            "title": "Last Used At",
+            "type": "string"
+          },
+          "is_current": {
+            "title": "Is Current",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "device_name",
+          "app_version",
+          "created_at",
+          "last_used_at",
+          "is_current"
+        ],
+        "title": "SessionSchema",
+        "type": "object"
+      },
+      "CodeSchema": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "CodeSchema",
+        "type": "object"
+      },
+      "PasswordResetRequestSchema": {
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "PasswordResetRequestSchema",
+        "type": "object"
+      },
+      "PasswordResetConfirmSchema": {
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "new_password"
+        ],
+        "title": "PasswordResetConfirmSchema",
+        "type": "object"
+      },
+      "PasswordChangeSchema": {
+        "properties": {
+          "current_password": {
+            "maxLength": 128,
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "PasswordChangeSchema",
+        "type": "object"
+      },
+      "PushDeviceSchema": {
+        "properties": {
+          "installation_id": {
+            "maxLength": 100,
+            "minLength": 8,
+            "title": "Installation Id",
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 255,
+            "title": "Token",
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "ios",
+              "android"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
+          "app_version": {
+            "default": "",
+            "maxLength": 32,
+            "title": "App Version",
+            "type": "string"
+          },
+          "locale": {
+            "default": "",
+            "maxLength": 20,
+            "title": "Locale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "installation_id",
+          "token",
+          "platform"
+        ],
+        "title": "PushDeviceSchema",
+        "type": "object"
+      },
+      "AccountDeleteSchema": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "AccountDeleteSchema",
+        "type": "object"
+      },
+      "UserProfileSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          },
+          "bio": {
+            "default": "",
+            "title": "Bio",
+            "type": "string"
+          },
+          "denomination": {
+            "default": "",
+            "title": "Denomination",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "is_verified": {
+            "title": "Is Verified",
+            "type": "boolean"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "email_verified": {
+            "default": false,
+            "title": "Email Verified",
+            "type": "boolean"
+          },
+          "cover_photo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Photo"
+          },
+          "website": {
+            "default": "",
+            "title": "Website",
+            "type": "string"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "follower_count": {
+            "default": 0,
+            "title": "Follower Count",
+            "type": "integer"
+          },
+          "following_count": {
+            "default": 0,
+            "title": "Following Count",
+            "type": "integer"
+          },
+          "is_page_admin": {
+            "default": false,
+            "title": "Is Page Admin",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "first_name",
+          "last_name",
+          "is_verified",
+          "email"
+        ],
+        "title": "UserProfileSchema",
+        "type": "object"
+      },
+      "UpdateProfileSchema": {
+        "properties": {
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "denomination": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Denomination"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          }
+        },
+        "title": "UpdateProfileSchema",
+        "type": "object"
+      },
+      "CursorPage_FollowEntrySchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/FollowEntrySchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[FollowEntrySchema]",
+        "type": "object"
+      },
+      "FollowEntrySchema": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/PublicUserSchema"
+          },
+          "since": {
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "since"
+        ],
+        "title": "FollowEntrySchema",
+        "type": "object"
+      },
+      "PublicUserSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          },
+          "bio": {
+            "default": "",
+            "title": "Bio",
+            "type": "string"
+          },
+          "denomination": {
+            "default": "",
+            "title": "Denomination",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "is_verified": {
+            "title": "Is Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "first_name",
+          "last_name",
+          "is_verified"
+        ],
+        "title": "PublicUserSchema",
+        "type": "object"
+      },
+      "ProfileSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          },
+          "bio": {
+            "default": "",
+            "title": "Bio",
+            "type": "string"
+          },
+          "denomination": {
+            "default": "",
+            "title": "Denomination",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "is_verified": {
+            "title": "Is Verified",
+            "type": "boolean"
+          },
+          "follower_count": {
+            "title": "Follower Count",
+            "type": "integer"
+          },
+          "following_count": {
+            "title": "Following Count",
+            "type": "integer"
+          },
+          "relationship": {
+            "$ref": "#/components/schemas/RelationshipSchema"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "first_name",
+          "last_name",
+          "is_verified",
+          "follower_count",
+          "following_count",
+          "relationship"
+        ],
+        "title": "ProfileSchema",
+        "type": "object"
+      },
+      "RelationshipSchema": {
+        "description": "How the viewer relates to a profile. Shown on profile screens.",
+        "properties": {
+          "is_self": {
+            "title": "Is Self",
+            "type": "boolean"
+          },
+          "following": {
+            "title": "Following",
+            "type": "boolean"
+          },
+          "followed_by": {
+            "title": "Followed By",
+            "type": "boolean"
+          },
+          "muted": {
+            "title": "Muted",
+            "type": "boolean"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_self",
+          "following",
+          "followed_by",
+          "muted",
+          "blocked"
+        ],
+        "title": "RelationshipSchema",
+        "type": "object"
+      },
+      "PostAuthorSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "profile_picture"
+        ],
+        "title": "PostAuthorSchema",
+        "type": "object"
+      },
+      "PostDetailSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/PostAuthorSchema"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "post_type": {
+            "title": "Post Type",
+            "type": "string"
+          },
+          "visibility": {
+            "title": "Visibility",
+            "type": "string"
+          },
+          "scripture_reference": {
+            "title": "Scripture Reference",
+            "type": "string"
+          },
+          "is_pinned": {
+            "title": "Is Pinned",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "media": {
+            "items": {
+              "$ref": "#/components/schemas/PostMediaSchema"
+            },
+            "title": "Media",
+            "type": "array"
+          },
+          "reaction_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Reaction Counts",
+            "type": "object"
+          },
+          "comment_count": {
+            "title": "Comment Count",
+            "type": "integer"
+          },
+          "my_reaction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "My Reaction"
+          }
+        },
+        "required": [
+          "id",
+          "author",
+          "content",
+          "post_type",
+          "visibility",
+          "scripture_reference",
+          "is_pinned",
+          "created_at",
+          "media",
+          "reaction_counts",
+          "comment_count"
+        ],
+        "title": "PostDetailSchema",
+        "type": "object"
+      },
+      "PostMediaSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "media_type": {
+            "title": "Media Type",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "order": {
+            "title": "Order",
+            "type": "integer"
+          },
+          "cloudflare_video_id": {
+            "default": "",
+            "title": "Cloudflare Video Id",
+            "type": "string"
+          },
+          "thumbnail_url": {
+            "default": "",
+            "title": "Thumbnail Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "media_type",
+          "url",
+          "order"
+        ],
+        "title": "PostMediaSchema",
+        "type": "object"
+      },
+      "CursorPage_PostDetailSchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/PostDetailSchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[PostDetailSchema]",
+        "type": "object"
+      },
+      "PostPatchSchema": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "visibility": {
+            "anyOf": [
+              {
+                "enum": [
+                  "public",
+                  "followers",
+                  "page",
+                  "group"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility"
+          },
+          "scripture_reference": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scripture Reference"
+          },
+          "is_pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Pinned"
+          }
+        },
+        "title": "PostPatchSchema",
+        "type": "object"
+      },
+      "ReactionBodySchema": {
+        "properties": {
+          "reaction_type": {
+            "enum": [
+              "amen",
+              "pray",
+              "love",
+              "praise",
+              "bless",
+              "like",
+              "haha",
+              "wow",
+              "sad",
+              "angry"
+            ],
+            "title": "Reaction Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reaction_type"
+        ],
+        "title": "ReactionBodySchema",
+        "type": "object"
+      },
+      "CommentAuthorSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "username"
+        ],
+        "title": "CommentAuthorSchema",
+        "type": "object"
+      },
+      "CommentSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/CommentAuthorSchema"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "author",
+          "body",
+          "created_at"
+        ],
+        "title": "CommentSchema",
+        "type": "object"
+      },
+      "CursorPage_CommentSchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/CommentSchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[CommentSchema]",
+        "type": "object"
+      },
+      "CommentCreateSchema": {
+        "properties": {
+          "body": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "CommentCreateSchema",
+        "type": "object"
+      },
+      "ShareBodySchema": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "ShareBodySchema",
+        "type": "object"
+      },
+      "PageCreateSchema": {
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "page_type": {
+            "default": "church",
+            "enum": [
+              "church",
+              "ministry",
+              "fellowship",
+              "organization",
+              "creator",
+              "business"
+            ],
+            "title": "Page Type",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
+          },
+          "denomination": {
+            "default": "",
+            "maxLength": 255,
+            "title": "Denomination",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "maxLength": 255,
+            "title": "Location",
+            "type": "string"
+          },
+          "website": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Website",
+            "type": "string"
+          },
+          "phone": {
+            "default": "",
+            "maxLength": 50,
+            "title": "Phone",
+            "type": "string"
+          },
+          "address": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PageCreateSchema",
+        "type": "object"
+      },
+      "PagePatchSchema": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "page_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "church",
+                  "ministry",
+                  "fellowship",
+                  "organization",
+                  "creator",
+                  "business"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Type"
+          },
+          "denomination": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Denomination"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "title": "PagePatchSchema",
+        "type": "object"
+      },
+      "MemberPatchSchema": {
+        "properties": {
+          "status": {
+            "enum": [
+              "pending",
+              "approved",
+              "banned"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "member",
+                  "moderator",
+                  "admin"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "MemberPatchSchema",
+        "type": "object"
+      },
+      "EventCreateSchema": {
+        "properties": {
+          "title": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
+          },
+          "start_datetime": {
+            "format": "date-time",
+            "title": "Start Datetime",
+            "type": "string"
+          },
+          "end_datetime": {
+            "format": "date-time",
+            "title": "End Datetime",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "maxLength": 512,
+            "title": "Location",
+            "type": "string"
+          },
+          "is_online": {
+            "default": false,
+            "title": "Is Online",
+            "type": "boolean"
+          },
+          "stream_link": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Link"
+          }
+        },
+        "required": [
+          "title",
+          "start_datetime",
+          "end_datetime"
+        ],
+        "title": "EventCreateSchema",
+        "type": "object"
+      },
+      "AnnounceCreateSchema": {
+        "properties": {
+          "title": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "is_pinned": {
+            "default": false,
+            "title": "Is Pinned",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "AnnounceCreateSchema",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "JWTAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": []
+}
