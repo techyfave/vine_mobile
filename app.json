@@ -5,10 +5,11 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.fgpsolutions.vine"
+      "bundleIdentifier": "com.fgpsolutions.vine",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +28,24 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-apple-authentication",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Vine needs access to your photos so you can choose a profile picture or share images.",
+          "cameraPermission": "Vine uses the camera so you can take a profile picture or share photos."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/logo-mark.png",
+          "imageWidth": 160,
+          "backgroundColor": "#E1ECFA"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -36,6 +54,11 @@
       "apiUrl": "http://localhost:8000",
       "eas": {
         "projectId": ""
+      },
+      "googleClientIds": {
+        "ios": "",
+        "android": "",
+        "web": ""
       }
     }
   }

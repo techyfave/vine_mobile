@@ -7,7 +7,10 @@ import { clearTokens, loadTokens, saveTokens } from '@/api/tokens';
 import { deviceInfo } from '@/lib/device';
 import { unregisterPushDevice } from '@/lib/push';
 
+import type { SocialCredential } from './social';
+
 type User = Schemas['UserProfileSchema'];
+type SignUpInput = { email: string; first_name: string; last_name: string; password: string; confirm_password: string };
 type Status = 'loading' | 'signedOut' | 'signedIn';
 
 type AuthContextValue = {
@@ -15,7 +18,8 @@ type AuthContextValue = {
   user: User | null;
   updateRequired: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (input: { email: string; username: string; password: string }) => Promise<void>;
+  signUp: (input: SignUpInput) => Promise<void>;
+  socialSignIn: (credential: SocialCredential) => Promise<void>;
   signOut: () => Promise<void>;
   reloadUser: () => Promise<User | null>;
 };
@@ -70,10 +74,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (input: { email: string; username: string; password: string }) => {
+    async (input: SignUpInput) => {
       const tokens = unwrap(
-        await api.POST('/api/v1/auth/register/', {
-          body: { ...input, confirm_password: input.password, device: await deviceInfo() },
+        await api.POST('/api/v1/auth/register/', { body: { ...input, device: await deviceInfo() } }),
+      );
+      await saveTokens(tokens);
+      await reloadUser();
+      setStatus('signedIn');
+    },
+    [reloadUser],
+  );
+
+  const socialSignIn = useCallback(
+    async (credential: SocialCredential) => {
+      const tokens = unwrap(
+        await api.POST('/api/v1/auth/social/', {
+          body: {
+            ...credential,
+            first_name: credential.first_name ?? '',
+            last_name: credential.last_name ?? '',
+            device: await deviceInfo(),
+          },
         }),
       );
       await saveTokens(tokens);
@@ -95,8 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [reset]);
 
   const value = useMemo(
-    () => ({ status, user, updateRequired, signIn, signUp, signOut, reloadUser }),
-    [status, user, updateRequired, signIn, signUp, signOut, reloadUser],
+    () => ({ status, user, updateRequired, signIn, signUp, socialSignIn, signOut, reloadUser }),
+    [status, user, updateRequired, signIn, signUp, socialSignIn, signOut, reloadUser],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

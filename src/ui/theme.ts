@@ -1,15 +1,49 @@
-import { useColorScheme } from 'react-native';
+/**
+ * Vine design tokens — taken from the Figma file and the web app's theme (vineplatform/src/app/globals.css).
+ * Light only: the design has no dark mode yet.
+ */
+export const colors = {
+  primary: '#264A74', // navy: text, primary buttons, active states
+  secondary: '#3B73B5',
+  link: '#4A90E2', // icons, links, dashed tab rings
+  softBlue: '#8BB8ED',
+  border: '#B5D1F4',
+  backgroundLight: '#D0E1F8',
+  background: '#E1ECFA', // app background
+  card: '#FFFFFF',
+  cardMuted: '#ECF3FC', // inputs, search pill, notification rows
+  subtle: '#F3F7FD', // auth sheet
+  white: '#FFFFFF',
+  textMuted: 'rgba(38, 74, 116, 0.5)', // #264A7480
+  live: '#E5383B',
+  danger: '#C62828',
+  overlay: 'rgba(38, 74, 116, 0.5)',
+} as const;
 
-const palette = {
-  light: { bg: '#FFFFFF', surface: '#F4F6F4', text: '#111511', muted: '#5E6A5E', border: '#DCE2DC', primary: '#2F6B3A', onPrimary: '#FFFFFF', danger: '#B3261E' },
-  dark: { bg: '#0E120F', surface: '#18201A', text: '#EEF2EE', muted: '#9AA79B', border: '#2A342C', primary: '#7FC08A', onPrimary: '#0E120F', danger: '#F2B8B5' },
-};
+export const fonts = {
+  regular: 'Roboto_400Regular',
+  medium: 'Roboto_500Medium',
+  bold: 'Roboto_700Bold',
+  black: 'Roboto_900Black',
+  script: 'Montez_400Regular', // onboarding / auth headings
+} as const;
 
-export type Colors = typeof palette.light;
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28, xxxl: 40 } as const;
+export const radius = { sm: 8, md: 12, lg: 16, xl: 20, xxl: 30, pill: 999 } as const;
 
-export function useColors(): Colors {
-  return useColorScheme() === 'dark' ? palette.dark : palette.light;
-}
-
-export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
-export const radius = { sm: 8, md: 12, lg: 20 };
+export const shadow = {
+  card: {
+    shadowColor: '#264A74',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  bar: {
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 12,
+  },
+} as const;

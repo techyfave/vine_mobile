@@ -12,6 +12,20 @@ EXPO_PUBLIC_API_URL=http://192.168.x.x:8000 npx expo start
 
 Push notifications need a development build (`npx expo run:ios|android` or `eas build --profile development`) and an EAS project ID in `app.json` → `extra.eas.projectId`. Expo Go is fine for everything else.
 
+## Design
+
+Screens follow the Figma file (VINE → MOBILE page, plus DESKTOP screens adapted to mobile). Colours, fonts and
+assets come from the same source as the web app (`vineplatform`): navy `#264A74`, Roboto + Montez, the Vine
+logos and icons. Tokens live in `src/ui/theme.ts`; shared components in `src/ui/`.
+
+## Sign in with Apple / Google
+
+- **Apple:** works on iOS dev/production builds (`ios.usesAppleSignIn` is on). Add the bundle ID to the backend's
+  `APPLE_CLIENT_IDS`.
+- **Google:** create iOS and Android OAuth client IDs in Google Cloud, put them in `app.json` →
+  `extra.googleClientIds`, and add the same IDs to the backend's `GOOGLE_CLIENT_IDS`. The Google button stays
+  hidden until a client ID exists for the platform.
+
 ## Checks
 
 ```bash

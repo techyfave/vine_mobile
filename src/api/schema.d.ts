@@ -61,6 +61,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/social/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Social Login
+         * @description Sign in (or sign up) with an Apple or Google ID token obtained on the device.
+         */
+        post: operations["apps_identity_api_social_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/refresh/": {
         parameters: {
             query?: never;
@@ -921,6 +941,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Notifications */
+        get: operations["apps_notifications_api_list_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Unread Count */
+        get: operations["apps_notifications_api_unread_count"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["apps_notifications_api_mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -940,6 +1011,12 @@ export interface components {
             access_expires_in: number;
             /** Email Verified */
             email_verified: boolean;
+            /**
+             * Is New User
+             * @description True when this request created the account (show onboarding)
+             * @default false
+             */
+            is_new_user: boolean;
         };
         /** DetailSchema */
         DetailSchema: {
@@ -974,8 +1051,21 @@ export interface components {
         RegisterSchema: {
             /** Email */
             email: string;
-            /** Username */
-            username: string;
+            /**
+             * First Name
+             * @default
+             */
+            first_name: string;
+            /**
+             * Last Name
+             * @default
+             */
+            last_name: string;
+            /**
+             * Username
+             * @description Generated from the email if omitted
+             */
+            username?: string | null;
             /** Password */
             password: string;
             /** Confirm Password */
@@ -988,6 +1078,32 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            device?: components["schemas"]["DeviceSchema"] | null;
+        };
+        /** SocialLoginSchema */
+        SocialLoginSchema: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "apple" | "google";
+            /** Id Token */
+            id_token: string;
+            /**
+             * Nonce
+             * @description Raw nonce used for Sign in with Apple
+             */
+            nonce?: string | null;
+            /**
+             * First Name
+             * @default
+             */
+            first_name: string;
+            /**
+             * Last Name
+             * @default
+             */
+            last_name: string;
             device?: components["schemas"]["DeviceSchema"] | null;
         };
         /** RefreshSchema */
@@ -1062,8 +1178,18 @@ export interface components {
         };
         /** AccountDeleteSchema */
         AccountDeleteSchema: {
-            /** Password */
+            /**
+             * Password
+             * @description Required for accounts with a password
+             * @default
+             */
             password: string;
+            /**
+             * Confirm
+             * @description Type DELETE (accounts that sign in with Apple/Google)
+             * @default
+             */
+            confirm: string;
         };
         /** UserProfileSchema */
         UserProfileSchema: {
@@ -1243,6 +1369,16 @@ export interface components {
             id: string;
             /** Username */
             username: string;
+            /**
+             * First Name
+             * @default
+             */
+            first_name: string;
+            /**
+             * Last Name
+             * @default
+             */
+            last_name: string;
             /** Profile Picture */
             profile_picture: string | null;
         };
@@ -1273,6 +1409,11 @@ export interface components {
             comment_count: number;
             /** My Reaction */
             my_reaction?: string | null;
+            /**
+             * Is Bookmarked
+             * @default false
+             */
+            is_bookmarked: boolean;
         };
         /** PostMediaSchema */
         PostMediaSchema: {
@@ -1327,6 +1468,16 @@ export interface components {
             id: string;
             /** Username */
             username: string;
+            /**
+             * First Name
+             * @default
+             */
+            first_name: string;
+            /**
+             * Last Name
+             * @default
+             */
+            last_name: string;
             /** Profile Picture */
             profile_picture?: string | null;
         };
@@ -1476,6 +1627,61 @@ export interface components {
              */
             is_pinned: boolean;
         };
+        /** CursorPage[NotificationSchema] */
+        CursorPage_NotificationSchema_: {
+            /** Results */
+            results: components["schemas"]["NotificationSchema"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** NotificationActorSchema */
+        NotificationActorSchema: {
+            /** Id */
+            id: string;
+            /** Username */
+            username: string;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name: string;
+            /** Profile Picture */
+            profile_picture?: string | null;
+        };
+        /** NotificationSchema */
+        NotificationSchema: {
+            /** Id */
+            id: string;
+            /** Type */
+            type: string;
+            /** Message */
+            message: string;
+            /** Is Read */
+            is_read: boolean;
+            /** Created At */
+            created_at: string;
+            actor?: components["schemas"]["NotificationActorSchema"] | null;
+            /** Post Id */
+            post_id?: string | null;
+            /**
+             * Viewer Follows Actor
+             * @description Drives the "Follow back" button
+             * @default false
+             */
+            viewer_follows_actor: boolean;
+        };
+        /** UnreadCountSchema */
+        UnreadCountSchema: {
+            /** Unread */
+            unread: number;
+        };
+        /** MarkReadSchema */
+        MarkReadSchema: {
+            /**
+             * Ids
+             * @description Omit to mark everything read
+             */
+            ids?: string[] | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -1564,6 +1770,57 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["LoginSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenSchema"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailSchema"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailSchema"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailSchema"];
+                };
+            };
+        };
+    };
+    apps_identity_api_social_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SocialLoginSchema"];
             };
         };
         responses: {
@@ -3018,6 +3275,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    apps_notifications_api_list_notifications: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CursorPage_NotificationSchema_"];
+                };
+            };
+        };
+    };
+    apps_notifications_api_unread_count: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCountSchema"];
+                };
+            };
+        };
+    };
+    apps_notifications_api_mark_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkReadSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCountSchema"];
+                };
             };
         };
     };

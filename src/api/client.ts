@@ -13,6 +13,7 @@ import { API_URL } from '@/config';
 import { appVersion, platform } from '@/lib/device';
 
 import type { components, paths } from './schema';
+import { ApiError, type ApiErrorBody } from './errors';
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from './tokens';
 
 export type Schemas = components['schemas'];
@@ -110,3 +111,24 @@ const authMiddleware: Middleware = {
 
 export const api = createClient<paths>({ baseUrl: API_URL });
 api.use(authMiddleware);
+
+/**
+ * Multipart upload (images). openapi-fetch sends JSON, so uploads go through fetch directly,
+ * with the same auth headers and the same refresh-and-retry-once behaviour.
+ */
+export async function uploadForm(path: string, build: () => FormData): Promise<unknown> {
+  const send = (token: string | null) =>
+    fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: { ...clientHeaders(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: build(),
+    });
+  let res = await send(getAccessToken());
+  if (res.status === 401) {
+    const fresh = await refreshAccessToken();
+    if (fresh) res = await send(fresh);
+  }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(res.status, body as ApiErrorBody);
+  return body;
+}

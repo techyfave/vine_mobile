@@ -1,7 +1,7 @@
 import * as Application from 'expo-application';
 import * as Crypto from 'expo-crypto';
 import * as Device from 'expo-device';
-import * as SecureStore from 'expo-secure-store';
+import { secureStorage } from '@/lib/secureStorage';
 import { Platform } from 'react-native';
 
 const INSTALLATION_KEY = 'vine.installation_id';
@@ -20,10 +20,10 @@ let cachedInstallationId: string | null = null;
 /** Stable random ID for this install. Not a hardware identifier; reset on reinstall. */
 export async function getInstallationId(): Promise<string> {
   if (cachedInstallationId) return cachedInstallationId;
-  let id = await SecureStore.getItemAsync(INSTALLATION_KEY);
+  let id = await secureStorage.get(INSTALLATION_KEY);
   if (!id) {
     id = Crypto.randomUUID();
-    await SecureStore.setItemAsync(INSTALLATION_KEY, id);
+    await secureStorage.set(INSTALLATION_KEY, id);
   }
   cachedInstallationId = id;
   return id;

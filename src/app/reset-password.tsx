@@ -3,24 +3,23 @@ import { useState } from 'react';
 
 import { api } from '@/api/client';
 import { errorMessage, unwrap } from '@/api/errors';
-import { Body, Button, ErrorText, Field, Screen, Title } from '@/ui/components';
+import { AuthLayout } from '@/ui/AuthLayout';
+import { AppText, Button, ErrorText, Input } from '@/ui/components';
+import { colors } from '@/ui/theme';
 
 export default function ResetPassword() {
-  const params = useLocalSearchParams<{ email?: string }>();
+  const { email = '' } = useLocalSearchParams<{ email?: string }>();
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const email = params.email ?? '';
 
   async function submit() {
     setError(undefined);
     setLoading(true);
     try {
-      unwrap(
-        await api.POST('/api/v1/auth/password/reset/confirm/', { body: { email, code, new_password: password } }),
-      );
-      router.replace('/sign-in');
+      unwrap(await api.POST('/api/v1/auth/password/reset/confirm/', { body: { email, code, new_password: password } }));
+      router.dismissTo('/sign-in');
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -29,13 +28,12 @@ export default function ResetPassword() {
   }
 
   return (
-    <Screen>
-      <Title>Enter your code</Title>
-      <Body muted>If {email} has a Vine account, we sent it a 6-digit code.</Body>
-      <Field label="Code" value={code} onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" />
-      <Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
+    <AuthLayout title="Enter Your Code" compactHero>
+      <AppText color={colors.textMuted}>If {email} has a Vine account, we sent it a 6-digit code.</AppText>
+      <Input placeholder="6-digit code" value={code} onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" />
+      <Input placeholder="New Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
       <ErrorText>{error}</ErrorText>
-      <Button title="Reset password" onPress={submit} loading={loading} disabled={code.length !== 6 || password.length < 10} />
-    </Screen>
+      <Button title="Reset Password" onPress={submit} loading={loading} disabled={code.length !== 6 || password.length < 10} />
+    </AuthLayout>
   );
 }

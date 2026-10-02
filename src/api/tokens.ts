@@ -1,5 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
+import { secureStorage } from '@/lib/secureStorage';
+
 /**
  * Tokens live only in the OS keychain/keystore (never AsyncStorage, logs or analytics).
  * The access token is also kept in memory to avoid a keychain read on every request.
@@ -18,15 +20,15 @@ export type StoredTokens = { access: string; refresh: string };
 export async function saveTokens(tokens: StoredTokens): Promise<void> {
   accessToken = tokens.access;
   await Promise.all([
-    SecureStore.setItemAsync(ACCESS_KEY, tokens.access, options),
-    SecureStore.setItemAsync(REFRESH_KEY, tokens.refresh, options),
+    secureStorage.set(ACCESS_KEY, tokens.access, options),
+    secureStorage.set(REFRESH_KEY, tokens.refresh, options),
   ]);
 }
 
 export async function loadTokens(): Promise<StoredTokens | null> {
   const [access, refresh] = await Promise.all([
-    SecureStore.getItemAsync(ACCESS_KEY, options),
-    SecureStore.getItemAsync(REFRESH_KEY, options),
+    secureStorage.get(ACCESS_KEY, options),
+    secureStorage.get(REFRESH_KEY, options),
   ]);
   if (!refresh) return null;
   accessToken = access;
@@ -38,13 +40,13 @@ export function getAccessToken(): string | null {
 }
 
 export async function getRefreshToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(REFRESH_KEY, options);
+  return secureStorage.get(REFRESH_KEY, options);
 }
 
 export async function clearTokens(): Promise<void> {
   accessToken = null;
   await Promise.all([
-    SecureStore.deleteItemAsync(ACCESS_KEY, options),
-    SecureStore.deleteItemAsync(REFRESH_KEY, options),
+    secureStorage.remove(ACCESS_KEY, options),
+    secureStorage.remove(REFRESH_KEY, options),
   ]);
 }

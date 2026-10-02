@@ -3,7 +3,9 @@ import { useState } from 'react';
 
 import { api } from '@/api/client';
 import { errorMessage, unwrap } from '@/api/errors';
-import { Body, Button, ErrorText, Field, Screen, Title } from '@/ui/components';
+import { AuthLayout } from '@/ui/AuthLayout';
+import { AppText, Button, ErrorText, Input, LinkText } from '@/ui/components';
+import { colors } from '@/ui/theme';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -24,12 +26,14 @@ export default function ForgotPassword() {
   }
 
   return (
-    <Screen>
-      <Title>Reset your password</Title>
-      <Body muted>Enter your email and we'll send you a 6-digit code.</Body>
-      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
+    <AuthLayout title="Reset Password" compactHero>
+      <AppText color={colors.textMuted}>Enter your email and we&apos;ll send you a 6-digit code.</AppText>
+      <Input placeholder="Email Address" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
       <ErrorText>{error}</ErrorText>
-      <Button title="Send code" onPress={submit} loading={loading} disabled={!email} />
-    </Screen>
+      <Button title="Send Code" onPress={submit} loading={loading} disabled={!email} />
+      <AppText variant="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
+        Remembered it? <LinkText onPress={() => router.back()}>Back to Log In</LinkText>
+      </AppText>
+    </AuthLayout>
   );
 }

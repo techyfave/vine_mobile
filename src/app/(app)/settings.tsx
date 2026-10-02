@@ -1,69 +1,88 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { api } from '@/api/client';
 import { errorMessage, unwrap } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
-import { Body, Button, ErrorText, Field, Screen, Title } from '@/ui/components';
-import { space, useColors } from '@/ui/theme';
+import { timeAgo } from '@/lib/time';
+import { AppText, Button, Card, ErrorText, Input } from '@/ui/components';
+import { colors, space } from '@/ui/theme';
 
 export default function Settings() {
-  const c = useColors();
-  const { user, signOut } = useAuth();
-  const queryClient = useQueryClient();
+  const { signOut } = useAuth();
+  const qc = useQueryClient();
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string>();
 
   const sessions = useQuery({
     queryKey: ['sessions'],
     queryFn: async () => unwrap(await api.GET('/api/v1/auth/sessions/')),
   });
-
   const revoke = useMutation({
     mutationFn: async (id: string) =>
       unwrap(await api.DELETE('/api/v1/auth/sessions/{session_id}/', { params: { path: { session_id: id } } })),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
   });
 
   async function deleteAccount() {
     setError(undefined);
     try {
-      unwrap(await api.POST('/api/v1/auth/account/delete/', { body: { password } }));
+      unwrap(await api.POST('/api/v1/auth/account/delete/', { body: { password, confirm } }));
       await signOut();
     } catch (err) {
       setError(errorMessage(err));
     }
   }
 
-  function confirmDelete() {
-    Alert.alert('Delete account?', 'Your account is deactivated now and permanently deleted after 30 days.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: deleteAccount },
-    ]);
-  }
-
   return (
-    <Screen>
-      <Body muted>Signed in as @{user?.username}</Body>
+    <ScrollView contentContainerStyle={{ padding: space.md, gap: space.md }}>
+      <Card style={{ gap: space.md }}>
+        <AppText variant="heading">Where you&apos;re signed in</AppText>
+        {sessions.data?.map((s) => (
+          <View key={s.id} style={styles.session}>
+            <View style={{ flex: 1 }}>
+              <AppText variant="bodyBold">
+                {s.device_name || s.platform}
+                {s.is_current ? ' · this device' : ''}
+              </AppText>
+              <AppText variant="caption" color={colors.textMuted}>
+                Active {timeAgo(s.last_used_at)}
+              </AppText>
+            </View>
+            {!s.is_current ? <Button title="Sign out" size="sm" variant="outline" onPress={() => revoke.mutate(s.id)} /> : null}
+          </View>
+        ))}
+      </Card>
 
-      <Title>Devices</Title>
-      {sessions.data?.map((s) => (
-        <View key={s.id} style={{ borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: space.md, gap: space.xs }}>
-          <Text style={{ color: c.text, fontWeight: '600' }}>
-            {s.device_name || s.platform} {s.is_current ? '(this device)' : ''}
-          </Text>
-          <Text style={{ color: c.muted }}>Last active {new Date(s.last_used_at).toLocaleString()}</Text>
-          {!s.is_current ? <Button title="Sign out this device" variant="ghost" onPress={() => revoke.mutate(s.id)} /> : null}
-        </View>
-      ))}
-
-      <Button title="Sign out" variant="ghost" onPress={signOut} />
-
-      <Title>Delete account</Title>
-      <Field label="Confirm with your password" value={password} onChangeText={setPassword} secureTextEntry />
-      <ErrorText>{error}</ErrorText>
-      <Button title="Delete my account" variant="danger" onPress={confirmDelete} disabled={!password} />
-    </Screen>
+      <Card style={{ gap: space.md }}>
+        <AppText variant="heading">Delete account</AppText>
+        <AppText color={colors.textMuted}>
+          Your account is deactivated straight away and permanently deleted after 30 days.
+        </AppText>
+        <Input placeholder="Your password" value={password} onChangeText={setPassword} secureTextEntry />
+        <AppText variant="caption" color={colors.textMuted}>
+          Signed up with Apple or Google? Leave the password empty and type DELETE below.
+        </AppText>
+        <Input placeholder="Type DELETE" value={confirm} onChangeText={setConfirm} autoCapitalize="characters" />
+        <ErrorText>{error}</ErrorText>
+        <Button
+          title="Delete my account"
+          variant="danger"
+          disabled={!password && confirm !== 'DELETE'}
+          onPress={() =>
+            Alert.alert('Delete account?', 'This cannot be undone after 30 days.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: deleteAccount },
+            ])
+          }
+        />
+      </Card>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  session: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+});

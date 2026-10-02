@@ -147,6 +147,69 @@
         }
       }
     },
+    "/api/v1/auth/social/": {
+      "post": {
+        "operationId": "apps_identity_api_social_login",
+        "summary": "Social Login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Sign in (or sign up) with an Apple or Google ID token obtained on the device.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialLoginSchema"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
     "/api/v1/auth/refresh/": {
       "post": {
         "operationId": "apps_identity_api_refresh",
@@ -2573,6 +2636,124 @@
           }
         ]
       }
+    },
+    "/api/v1/notifications/": {
+      "get": {
+        "operationId": "apps_notifications_api_list_notifications",
+        "summary": "List Notifications",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_NotificationSchema_"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count/": {
+      "get": {
+        "operationId": "apps_notifications_api_unread_count",
+        "summary": "Unread Count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadCountSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/read/": {
+      "post": {
+        "operationId": "apps_notifications_api_mark_read",
+        "summary": "Mark Read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadCountSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReadSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2598,6 +2779,12 @@
           },
           "email_verified": {
             "title": "Email Verified",
+            "type": "boolean"
+          },
+          "is_new_user": {
+            "default": false,
+            "description": "True when this request created the account (show onboarding)",
+            "title": "Is New User",
             "type": "boolean"
           }
         },
@@ -2666,11 +2853,31 @@
             "title": "Email",
             "type": "string"
           },
-          "username": {
-            "maxLength": 30,
-            "minLength": 3,
-            "title": "Username",
+          "first_name": {
+            "default": "",
+            "maxLength": 150,
+            "title": "First Name",
             "type": "string"
+          },
+          "last_name": {
+            "default": "",
+            "maxLength": 150,
+            "title": "Last Name",
+            "type": "string"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Generated from the email if omitted",
+            "title": "Username"
           },
           "password": {
             "maxLength": 128,
@@ -2696,7 +2903,6 @@
         },
         "required": [
           "email",
-          "username",
           "password",
           "confirm_password"
         ],
@@ -2731,6 +2937,64 @@
           "password"
         ],
         "title": "LoginSchema",
+        "type": "object"
+      },
+      "SocialLoginSchema": {
+        "properties": {
+          "provider": {
+            "enum": [
+              "apple",
+              "google"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "id_token": {
+            "maxLength": 8192,
+            "title": "Id Token",
+            "type": "string"
+          },
+          "nonce": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Raw nonce used for Sign in with Apple",
+            "title": "Nonce"
+          },
+          "first_name": {
+            "default": "",
+            "maxLength": 150,
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "default": "",
+            "maxLength": 150,
+            "title": "Last Name",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeviceSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "provider",
+          "id_token"
+        ],
+        "title": "SocialLoginSchema",
         "type": "object"
       },
       "RefreshSchema": {
@@ -2915,14 +3179,20 @@
       "AccountDeleteSchema": {
         "properties": {
           "password": {
+            "default": "",
+            "description": "Required for accounts with a password",
             "maxLength": 128,
             "title": "Password",
             "type": "string"
+          },
+          "confirm": {
+            "default": "",
+            "description": "Type DELETE (accounts that sign in with Apple/Google)",
+            "maxLength": 10,
+            "title": "Confirm",
+            "type": "string"
           }
         },
-        "required": [
-          "password"
-        ],
         "title": "AccountDeleteSchema",
         "type": "object"
       },
@@ -3346,6 +3616,16 @@
             "title": "Username",
             "type": "string"
           },
+          "first_name": {
+            "default": "",
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "default": "",
+            "title": "Last Name",
+            "type": "string"
+          },
           "profile_picture": {
             "anyOf": [
               {
@@ -3427,6 +3707,11 @@
               }
             ],
             "title": "My Reaction"
+          },
+          "is_bookmarked": {
+            "default": false,
+            "title": "Is Bookmarked",
+            "type": "boolean"
           }
         },
         "required": [
@@ -3608,6 +3893,16 @@
           },
           "username": {
             "title": "Username",
+            "type": "string"
+          },
+          "first_name": {
+            "default": "",
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "default": "",
+            "title": "Last Name",
             "type": "string"
           },
           "profile_picture": {
@@ -4009,6 +4304,167 @@
           "body"
         ],
         "title": "AnnounceCreateSchema",
+        "type": "object"
+      },
+      "CursorPage_NotificationSchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationSchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[NotificationSchema]",
+        "type": "object"
+      },
+      "NotificationActorSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "first_name",
+          "last_name"
+        ],
+        "title": "NotificationActorSchema",
+        "type": "object"
+      },
+      "NotificationSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "is_read": {
+            "title": "Is Read",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotificationActorSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "post_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Post Id"
+          },
+          "viewer_follows_actor": {
+            "default": false,
+            "description": "Drives the \"Follow back\" button",
+            "title": "Viewer Follows Actor",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "message",
+          "is_read",
+          "created_at"
+        ],
+        "title": "NotificationSchema",
+        "type": "object"
+      },
+      "UnreadCountSchema": {
+        "properties": {
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unread"
+        ],
+        "title": "UnreadCountSchema",
+        "type": "object"
+      },
+      "MarkReadSchema": {
+        "properties": {
+          "ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 200,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit to mark everything read",
+            "title": "Ids"
+          }
+        },
+        "title": "MarkReadSchema",
         "type": "object"
       }
     },

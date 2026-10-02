@@ -1,9 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 
 import { errorMessage } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
-import { Body, Button, ErrorText, Field, Screen, Title } from '@/ui/components';
+import { SocialRow } from '@/auth/SocialRow';
+import { AuthLayout } from '@/ui/AuthLayout';
+import { AppText, Button, Divider, ErrorText, Input, LinkText } from '@/ui/components';
+import { colors, space } from '@/ui/theme';
 
 export default function SignIn() {
   const { signIn } = useAuth();
@@ -25,15 +29,23 @@ export default function SignIn() {
   }
 
   return (
-    <Screen>
-      <Title>Welcome to Vine</Title>
-      <Body muted>Sign in to keep up with your church and community.</Body>
-      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" />
-      <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" textContentType="password" />
+    <AuthLayout title="Welcome Back" background="login">
+      <SocialRow />
+      <Divider label="OR" />
+      <AppText variant="label">Log in with Email</AppText>
+      <Input placeholder="Email Address" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" />
+      <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" textContentType="password" onSubmitEditing={submit} />
+      <View style={{ alignItems: 'flex-end' }}>
+        <AppText variant="caption" onPress={() => router.push('/forgot-password')}>
+          Forgot your password?
+        </AppText>
+      </View>
       <ErrorText>{error}</ErrorText>
-      <Button title="Sign in" onPress={submit} loading={loading} disabled={!email || !password} />
-      <Button title="Create an account" variant="ghost" onPress={() => router.push('/sign-up')} />
-      <Button title="Forgot password?" variant="ghost" onPress={() => router.push('/forgot-password')} />
-    </Screen>
+      <Button title="Log In" onPress={submit} loading={loading} disabled={!email || !password} />
+      <AppText variant="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
+        Don&apos;t have an account? <LinkText onPress={() => router.replace('/sign-up')}>Sign Up</LinkText>
+      </AppText>
+      <View style={{ height: space.sm }} />
+    </AuthLayout>
   );
 }

@@ -1,12 +1,22 @@
 import { Stack } from 'expo-router';
-import { useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { useAuth } from '@/auth/AuthProvider';
+import { hasSeen, markSeen } from '@/lib/onboarding';
 import { registerForPush } from '@/lib/push';
+import { colors, fonts } from '@/ui/theme';
+
+const OnboardingContext = createContext<{ finish: () => void }>({ finish: () => {} });
+export const useOnboarding = () => useContext(OnboardingContext);
 
 export default function AppLayout() {
   const { user } = useAuth();
   const verified = user?.email_verified ?? false;
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (user) hasSeen(user.id, 'onboarding').then(setOnboarded).catch(() => setOnboarded(true));
+  }, [user]);
 
   useEffect(() => {
     registerForPush().catch(() => {
@@ -14,13 +24,40 @@ export default function AppLayout() {
     });
   }, []);
 
+  const finish = useCallback(() => {
+    if (user) markSeen(user.id, 'onboarding').catch(() => {});
+    setOnboarded(true);
+  }, [user]);
+
+  if (onboarded === null) return null;
+
   return (
-    <Stack>
-      <Stack.Protected guard={!verified}>
-        <Stack.Screen name="verify-email" options={{ title: 'Verify your email', headerBackVisible: false }} />
-      </Stack.Protected>
-      <Stack.Screen name="index" options={{ title: 'Vine' }} />
-      <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-    </Stack>
+    <OnboardingContext.Provider value={{ finish }}>
+      <Stack
+        screenOptions={{
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.primary,
+          headerTitleStyle: { fontFamily: fonts.bold, color: colors.primary },
+          headerBackButtonDisplayMode: 'minimal',
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
+        <Stack.Protected guard={!verified}>
+          <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+        </Stack.Protected>
+        <Stack.Protected guard={verified && !onboarded}>
+          <Stack.Screen name="onboarding" options={{ headerShown: false, animation: 'fade' }} />
+        </Stack.Protected>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="post/[id]" options={{ title: 'Post' }} />
+        <Stack.Screen name="create-post" options={{ title: 'Create Post', presentation: 'modal' }} />
+        <Stack.Screen name="menu" options={{ title: 'Menu' }} />
+        <Stack.Screen name="settings" options={{ title: 'Settings & Privacy' }} />
+        <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />
+        <Stack.Screen name="saved" options={{ title: 'Saved' }} />
+        <Stack.Screen name="search" options={{ title: 'Search' }} />
+      </Stack>
+    </OnboardingContext.Provider>
   );
 }
