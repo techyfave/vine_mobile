@@ -2,6 +2,11 @@
 
 Expo (React Native) app for Vine — iOS and Android. The first Vine client (see the roadmap, §1A).
 
+## Preview on an Android phone
+
+See [PHONE_PREVIEW.md](PHONE_PREVIEW.md) for Windows commands, APK installation,
+the Vine launcher icon, and backend connectivity troubleshooting.
+
 ## Run it
 
 ```bash

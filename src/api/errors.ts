@@ -25,8 +25,14 @@ export function unwrap<T>(result: { data?: T; error?: unknown; response: Respons
 
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) return err.message;
-  if (err instanceof Error && err.message.includes('Network request failed')) {
+  if (err instanceof Error && /Network request failed|fetch failed/.test(err.message)) {
     return "Can't reach Vine. Check your connection and try again.";
+  }
+  // In development builds, show the real error so problems can be diagnosed from the phone.
+  if (__DEV__) {
+    console.warn('[api]', err);
+    const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    return `Something went wrong (${detail})`;
   }
   return 'Something went wrong. Please try again.';
 }

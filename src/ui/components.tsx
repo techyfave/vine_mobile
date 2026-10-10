@@ -1,8 +1,10 @@
 import { Image, type ImageSource } from 'expo-image';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  type DimensionValue,
   Pressable,
+  type PressableProps,
   type StyleProp,
   StyleSheet,
   Text,
@@ -13,12 +15,23 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+
 import { icons } from './assets';
+import { duration, spring, timing } from './motion';
+import { useRevealFocused } from './reveal';
 import { colors, fonts, radius, shadow, space } from './theme';
 
 // --- Typography ---------------------------------------------------------------------
 
-type Variant = 'display' | 'title' | 'heading' | 'body' | 'bodyBold' | 'caption' | 'label' | 'script';
+type Variant = 'display' | 'title' | 'heading' | 'body' | 'bodyBold' | 'caption' | 'label' | 'hero';
 
 export function AppText({
   variant = 'body',
@@ -30,14 +43,15 @@ export function AppText({
 }
 
 const type = StyleSheet.create({
-  display: { fontFamily: fonts.black, fontSize: 28, lineHeight: 34 },
-  title: { fontFamily: fonts.bold, fontSize: 24, lineHeight: 30 },
-  heading: { fontFamily: fonts.bold, fontSize: 18, lineHeight: 22 },
+  display: { fontFamily: fonts.brand, fontSize: 28, lineHeight: 34 },
+  title: { fontFamily: fonts.brand, fontSize: 24, lineHeight: 30 },
+  heading: { fontFamily: fonts.bold, fontSize: 17, lineHeight: 22 },
   body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21 },
   bodyBold: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 21 },
   caption: { fontFamily: fonts.medium, fontSize: 13, lineHeight: 17 },
-  label: { fontFamily: fonts.medium, fontSize: 18, lineHeight: 22 },
-  script: { fontFamily: fonts.script, fontSize: 44, lineHeight: 52 },
+  label: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 22 },
+  /** Big welcoming lines on photo backgrounds ("Get Connected With"). */
+  hero: { fontFamily: fonts.brandMedium, fontSize: 34, lineHeight: 40 },
 });
 
 // --- Icons & avatars ------------------------------------------------------------------
@@ -111,16 +125,22 @@ export function Divider({ label }: { label?: string }) {
 
 // --- Inputs ------------------------------------------------------------------------------
 
-export function Input({ secureTextEntry, style, ...props }: TextInputProps) {
+export function Input({ secureTextEntry, style, ref, ...props }: TextInputProps & { ref?: Ref<TextInput> }) {
   const [hidden, setHidden] = useState(true);
+  const reveal = useRevealFocused();
   return (
     <View style={styles.inputWrap}>
       <TextInput
+        ref={ref}
         placeholderTextColor={colors.textMuted}
         style={[styles.input, style]}
         secureTextEntry={secureTextEntry ? hidden : false}
         accessibilityLabel={props.placeholder}
         {...props}
+        onFocus={(e) => {
+          reveal();
+          props.onFocus?.(e);
+        }}
       />
       {secureTextEntry ? (
         <Pressable
@@ -146,6 +166,71 @@ export function ErrorText({ children }: { children?: ReactNode }) {
   );
 }
 
+// --- Motion primitives -----------------------------------------------------------------------
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/** Pressable that sinks slightly while held. Every tappable surface uses this for the same feel. */
+export function PressableScale({
+  scaleTo = 0.96,
+  style,
+  onPressIn,
+  onPressOut,
+  ...props
+}: Omit<PressableProps, 'style'> & { scaleTo?: number; style?: StyleProp<ViewStyle> }) {
+  const scale = useSharedValue(1);
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return (
+    <AnimatedPressable
+      {...props}
+      onPressIn={(e) => {
+        scale.value = withSpring(scaleTo, spring);
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        scale.value = withSpring(1, spring);
+        onPressOut?.(e);
+      }}
+      style={[style, animated]}
+    />
+  );
+}
+
+/** Wraps an icon and gives it a quick "pop" whenever `active` turns on (likes, saves). */
+export function Pop({ active, children }: { active: boolean; children: ReactNode }) {
+  const scale = useSharedValue(1);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false; // no pop for posts that load already liked
+      return;
+    }
+    if (active) scale.value = withSequence(withTiming(1.35, timing(duration.fast)), withSpring(1, spring));
+  }, [active, scale]);
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return <Animated.View style={animated}>{children}</Animated.View>;
+}
+
+/** Placeholder block that gently pulses while content loads. */
+export function Skeleton({
+  width = '100%',
+  height = 14,
+  round = 6,
+  style,
+}: {
+  width?: DimensionValue;
+  height?: DimensionValue;
+  round?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const opacity = useSharedValue(0.55);
+  useEffect(() => {
+    opacity.value = withRepeat(withTiming(1, timing(900)), -1, true);
+  }, [opacity]);
+  const animated = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return <Animated.View style={[{ width, height, borderRadius: round, backgroundColor: colors.cardMuted }, style, animated]} />;
+}
+
 // --- Buttons -------------------------------------------------------------------------------
 
 export function Button({
@@ -166,17 +251,18 @@ export function Button({
   style?: StyleProp<ViewStyle>;
 }) {
   const v = buttonVariants[variant];
+  const off = disabled || loading;
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
-      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      accessibilityState={{ disabled: off, busy: loading }}
       onPress={onPress}
-      disabled={disabled || loading}
-      style={({ pressed }) => [
+      disabled={off}
+      style={[
         styles.button,
         size === 'sm' && styles.buttonSm,
         { backgroundColor: v.bg, borderColor: v.border },
-        (pressed || disabled) && { opacity: disabled ? 0.5 : 0.85 },
+        disabled && { opacity: 0.5 },
         style,
       ]}
     >
@@ -187,7 +273,7 @@ export function Button({
           {title}
         </AppText>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -212,15 +298,15 @@ export function SocialButton({
   loading?: boolean;
 }) {
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       disabled={loading}
-      style={({ pressed }) => [styles.social, pressed && { opacity: 0.8 }]}
+      style={styles.social}
     >
       {loading ? <ActivityIndicator color={colors.primary} /> : <Icon source={icon} size={30} />}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -243,12 +329,13 @@ export function RingButton({
   dashed?: boolean;
 }) {
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={6}
+      scaleTo={0.9}
       style={{
         width: size,
         height: size,
@@ -262,7 +349,7 @@ export function RingButton({
       }}
     >
       <Icon source={icon} size={iconSize} />
-    </Pressable>
+    </PressableScale>
   );
 }
 

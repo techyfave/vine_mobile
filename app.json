@@ -4,7 +4,7 @@
     "slug": "vine",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/logo-mark.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
@@ -13,13 +13,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#E1ECFA",
+        "foregroundImage": "./assets/images/logo-mark.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.fgpsolutions.vine"
+      "package": "com.fgpsolutions.vine",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -53,13 +54,15 @@
     "extra": {
       "apiUrl": "http://localhost:8000",
       "eas": {
-        "projectId": ""
+        "projectId": "fd9a9e85-60cd-41e0-9213-63ff969e7087"
       },
       "googleClientIds": {
         "ios": "",
         "android": "",
         "web": ""
-      }
-    }
+      },
+      "router": {}
+    },
+    "owner": "techyfave"
   }
 }

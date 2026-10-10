@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { useAuth } from '@/auth/AuthProvider';
 import { hasSeen, markSeen } from '@/lib/onboarding';
 import { registerForPush } from '@/lib/push';
+import { duration } from '@/ui/motion';
 import { colors, fonts } from '@/ui/theme';
 
 const OnboardingContext = createContext<{ finish: () => void }>({ finish: () => {} });
@@ -38,9 +39,12 @@ export default function AppLayout() {
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.primary,
-          headerTitleStyle: { fontFamily: fonts.bold, color: colors.primary },
+          headerTitleStyle: { fontFamily: fonts.brand, color: colors.primary },
           headerBackButtonDisplayMode: 'minimal',
           contentStyle: { backgroundColor: colors.background },
+          // One transition style for every pushed screen (same on iOS and Android).
+          animation: 'slide_from_right',
+          animationDuration: duration.base,
         }}
       >
         <Stack.Protected guard={!verified}>

@@ -6,7 +6,7 @@ import { ActionSheetIOS, Alert, Platform, Pressable, Share, StyleSheet, View } f
 import { api } from '@/api/client';
 import { displayName, timeAgo } from '@/lib/time';
 import { icons } from '@/ui/assets';
-import { AppText, Avatar, Icon } from '@/ui/components';
+import { AppText, Avatar, Icon, Pop, PressableScale, Skeleton } from '@/ui/components';
 import { colors, radius, space } from '@/ui/theme';
 
 import { type Post, totalReactions, useToggleLike, useToggleSave } from './api';
@@ -113,6 +113,7 @@ export const PostCard = memo(function PostCard({
           label={`Likes (${totalReactions(post)})`}
           onPress={() => like.mutate(post)}
           active={Boolean(post.my_reaction)}
+          pop
         />
         <Action icon={icons.comment} label={`Comments (${post.comment_count})`} onPress={open} />
         <Action
@@ -125,27 +126,68 @@ export const PostCard = memo(function PostCard({
           label={post.is_bookmarked ? 'Saved' : 'Save'}
           onPress={() => save.mutate(post)}
           active={post.is_bookmarked}
+          pop
         />
       </View>
     </View>
   );
 });
 
-function Action({ icon, label, onPress, active }: { icon: number; label: string; onPress: () => void; active?: boolean }) {
+function Action({
+  icon,
+  label,
+  onPress,
+  active,
+  pop = false,
+}: {
+  icon: number;
+  label: string;
+  onPress: () => void;
+  active?: boolean;
+  pop?: boolean;
+}) {
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={8}
+      scaleTo={0.92}
       style={styles.action}
     >
-      <Icon source={icon} size={16} />
+      {pop ? (
+        <Pop active={Boolean(active)}>
+          <Icon source={icon} size={16} />
+        </Pop>
+      ) : (
+        <Icon source={icon} size={16} />
+      )}
       <AppText variant="caption" color={active ? colors.primary : colors.textMuted}>
         {label}
       </AppText>
-    </Pressable>
+    </PressableScale>
+  );
+}
+
+/** Loading placeholder shaped like a post card. */
+export function PostCardSkeleton() {
+  return (
+    <View style={styles.card}>
+      <View style={styles.author}>
+        <Skeleton width={46} height={46} round={23} />
+        <View style={{ gap: 6, flex: 1 }}>
+          <Skeleton width="45%" height={14} />
+          <Skeleton width="25%" height={10} />
+        </View>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Skeleton height={12} />
+        <Skeleton height={12} />
+        <Skeleton width="70%" height={12} />
+      </View>
+      <Skeleton height={160} round={radius.xl} />
+    </View>
   );
 }
 

@@ -1,11 +1,5 @@
-import { Montez_400Regular } from '@expo-google-fonts/montez';
-import {
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-  Roboto_900Black,
-  useFonts,
-} from '@expo-google-fonts/roboto';
+import { Fredoka_500Medium, Fredoka_600SemiBold } from '@expo-google-fonts/fredoka';
+import { Nunito_500Medium, Nunito_700Bold, Nunito_800ExtraBold, useFonts } from '@expo-google-fonts/nunito';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -16,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { AppText } from '@/ui/components';
+import { duration } from '@/ui/motion';
 import { colors, space } from '@/ui/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -42,7 +37,14 @@ function RootNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   if (!ready) return null; // native splash stays up
   if (updateRequired) return <UpdateRequired />;
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'fade',
+        animationDuration: duration.base,
+      }}
+    >
       <Stack.Protected guard={status === 'signedIn'}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>
@@ -58,11 +60,11 @@ function RootNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold,
-    Roboto_900Black,
-    Montez_400Regular,
+    Nunito_500Medium,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Fredoka_500Medium,
+    Fredoka_600SemiBold,
   });
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } }),

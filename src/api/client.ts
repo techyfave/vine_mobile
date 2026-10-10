@@ -80,6 +80,13 @@ function clientHeaders(): Record<string, string> {
 
 const pendingRetries = new Map<string, Request>();
 
+/** Rebuild as a standard Response so openapi-fetch accepts it as a replacement. */
+async function toResponse(res: Response): Promise<Response> {
+  if ((res as unknown) instanceof Response) return res; // TS narrows Response to never otherwise
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
+}
+
 const authMiddleware: Middleware = {
   async onRequest({ request, id, schemaPath }) {
     for (const [k, v] of Object.entries(clientHeaders())) request.headers.set(k, v);
@@ -93,16 +100,18 @@ const authMiddleware: Middleware = {
   async onResponse({ response, id }) {
     const original = pendingRetries.get(id);
     pendingRetries.delete(id);
+    // Return nothing unless the response is replaced. openapi-fetch rejects anything that is not
+    // `instanceof Response`, and the response objects from Expo's fetch are a different class.
     if (response.status === 426) {
       updateRequiredListeners.forEach((fn) => fn());
-      return response;
+      return undefined;
     }
-    if (response.status !== 401 || !original) return response;
+    if (response.status !== 401 || !original) return undefined;
     const newToken = await refreshAccessToken();
-    if (!newToken) return response;
+    if (!newToken) return undefined;
     const retry = new Request(original, { headers: new Headers(original.headers) });
     retry.headers.set('Authorization', `Bearer ${newToken}`);
-    return fetch(retry);
+    return toResponse(await fetch(retry));
   },
   onError({ id }) {
     pendingRetries.delete(id);

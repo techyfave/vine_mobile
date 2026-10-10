@@ -20,12 +20,18 @@ export const colors = {
   overlay: 'rgba(38, 74, 116, 0.5)',
 } as const;
 
+/**
+ * Type: two rounded families that match the logo's soft, rounded "ine".
+ * - Fredoka (brand): display text, titles, hero lines. Closest match to the logo lettering.
+ * - Nunito (text): everything people read: body, labels, buttons, inputs.
+ * Never set fontWeight on top of these; pick the family weight instead.
+ */
 export const fonts = {
-  regular: 'Roboto_400Regular',
-  medium: 'Roboto_500Medium',
-  bold: 'Roboto_700Bold',
-  black: 'Roboto_900Black',
-  script: 'Montez_400Regular', // onboarding / auth headings
+  regular: 'Nunito_500Medium',
+  medium: 'Nunito_700Bold',
+  bold: 'Nunito_800ExtraBold',
+  brand: 'Fredoka_600SemiBold',
+  brandMedium: 'Fredoka_500Medium',
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28, xxxl: 40 } as const;

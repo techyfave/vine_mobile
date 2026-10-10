@@ -1,12 +1,14 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useCallback, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { api, type Schemas } from '@/api/client';
 import { unwrap } from '@/api/errors';
 import { timeAgo } from '@/lib/time';
-import { AppText, Avatar, Button } from '@/ui/components';
+import { AppText, Avatar, Button, PressableScale, Skeleton } from '@/ui/components';
+import { enter, layout, staggerDelay } from '@/ui/motion';
 import { TopBar } from '@/ui/TopBar';
 import { colors, radius, space } from '@/ui/theme';
 
@@ -42,6 +44,7 @@ export default function Notifications() {
   });
 
   const items = list.data?.pages.flatMap((p) => p.results) ?? [];
+  const seen = useRef(new Set<string>());
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -52,21 +55,38 @@ export default function Notifications() {
           <View style={styles.titlePill}>
             <AppText variant="heading">Notifications</AppText>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Mark all as read" onPress={() => markAll.mutate()} style={styles.morePill}>
+          <PressableScale accessibilityRole="button" accessibilityLabel="Mark all as read" onPress={() => markAll.mutate()} style={styles.morePill}>
             <AppText variant="bodyBold">···</AppText>
-          </Pressable>
+          </PressableScale>
         </View>
-        <FlatList<Notification>
+        <Animated.FlatList<Notification>
           data={items}
           keyExtractor={(n) => n.id}
           contentContainerStyle={{ gap: space.md, paddingBottom: 120 }}
-          renderItem={({ item }) => (
-            <NotificationRow item={item} onFollowBack={(u) => followBack.mutate(u)} following={followBack.isPending} />
-          )}
+          itemLayoutAnimation={layout}
+          renderItem={({ item, index }) => {
+            const fresh = !seen.current.has(item.id);
+            seen.current.add(item.id);
+            return (
+              <Animated.View entering={fresh ? enter.rise(staggerDelay(index % 20)) : undefined}>
+                <NotificationRow item={item} onFollowBack={(u) => followBack.mutate(u)} following={followBack.isPending} />
+              </Animated.View>
+            );
+          }}
           onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
           ListEmptyComponent={
             list.isLoading ? (
-              <ActivityIndicator color={colors.primary} />
+              <View style={{ gap: space.md }}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View key={i} style={[styles.row, { backgroundColor: colors.subtle }]}>
+                    <Skeleton width={40} height={40} round={20} />
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Skeleton width="80%" height={12} />
+                      <Skeleton width="30%" height={10} />
+                    </View>
+                  </View>
+                ))}
+              </View>
             ) : (
               <AppText color={colors.textMuted} style={{ textAlign: 'center', marginTop: space.xl }}>
                 No notifications yet.
@@ -90,9 +110,10 @@ function NotificationRow({
 }) {
   const showFollowBack = item.type === 'follow' && item.actor && !item.viewer_follows_actor;
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       onPress={() => item.post_id && router.push({ pathname: '/post/[id]', params: { id: item.post_id } })}
+      scaleTo={0.98}
       style={[styles.row, !item.is_read && styles.unread]}
     >
       <Avatar uri={item.actor?.profile_picture} size={40} />
@@ -107,7 +128,7 @@ function NotificationRow({
       {showFollowBack ? (
         <Button title="Follow back" size="sm" loading={following} onPress={() => onFollowBack(item.actor!.username)} />
       ) : null}
-    </Pressable>
+    </PressableScale>
   );
 }
 

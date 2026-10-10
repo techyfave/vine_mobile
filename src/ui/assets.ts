@@ -3,7 +3,10 @@
 export const images = {
   logoMark: require('../../assets/images/logo-mark.png'),
   logoWordmark: require('../../assets/images/logo-wordmark.png'),
-  logoWordmarkWhite: require('../../assets/icons/logo-wordmark-white.svg'),
+  logoWordmarkWhite: require('../../assets/icons/logo-wordmark-white.svg'), // first prototype; kept for reference
+  // Current Vine logo (leaf V + "ine"), vector-traced from assets/vinelogo.png. Aspect ratio 847:640.
+  vineLogo: require('../../assets/icons/vine-logo.svg'),
+  vineLogoWhite: require('../../assets/icons/vine-logo-white.svg'),
   // The web app's login photo is an Unsplash+ watermarked preview and can't ship; both auth
   // screens use the sign-up photo until a licensed login image is provided.
   authSignup: require('../../assets/images/auth-signup.jpg'),

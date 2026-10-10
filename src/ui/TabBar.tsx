@@ -1,9 +1,12 @@
 import { BlurView } from 'expo-blur';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { icons } from './assets';
 import { RingButton } from './components';
+import { enter, exit, timing } from './motion';
 import { colors, shadow, space } from './theme';
 
 const TAB_ICONS: Record<string, { icon: number; label: string }> = {
@@ -41,14 +44,24 @@ export function TabBar({ state, navigation, badges }: TabBarProps) {
                   if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
                 }}
               />
-              {badge ? <View style={styles.badge} /> : null}
-              <View style={[styles.underline, focused && { backgroundColor: colors.link }]} />
+              {badge ? <Animated.View entering={enter.pop()} exiting={exit.fade()} style={styles.badge} /> : null}
+              <Underline active={focused} />
             </View>
           );
         })}
       </BlurView>
     </View>
   );
+}
+
+/** Active-tab underline: grows out from the centre. */
+function Underline({ active }: { active: boolean }) {
+  const p = useSharedValue(active ? 1 : 0);
+  useEffect(() => {
+    p.value = withTiming(active ? 1 : 0, timing());
+  }, [active, p]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scaleX: p.value }], opacity: p.value }));
+  return <Animated.View style={[styles.underline, style]} />;
 }
 
 const styles = StyleSheet.create({
@@ -64,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.75)',
   },
   item: { alignItems: 'center', gap: 6 },
-  underline: { width: 28, height: 3, borderRadius: 2, backgroundColor: 'transparent' },
+  underline: { width: 28, height: 3, borderRadius: 2, backgroundColor: colors.link },
   badge: {
     position: 'absolute',
     top: 0,

@@ -2,11 +2,13 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useAuth } from '@/auth/AuthProvider';
 import { hasSeen, markSeen } from '@/lib/onboarding';
 import { icons, images } from '@/ui/assets';
 import { AppText, Button, Icon } from '@/ui/components';
+import { enter } from '@/ui/motion';
 import { colors, radius, space } from '@/ui/theme';
 
 /** "WELCOME DOTMOND! SET UP YOUR PROFILE" — shown once while the profile is still empty. */
@@ -29,7 +31,7 @@ export function WelcomeModal() {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => close(false)}>
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <Animated.View entering={enter.pop()} style={styles.card}>
           <AppText variant="display" style={{ textAlign: 'center' }}>
             WELCOME {(user.first_name || user.username).toUpperCase()}!
           </AppText>
@@ -51,7 +53,7 @@ export function WelcomeModal() {
             <Button title="Skip" variant="outline" onPress={() => close(false)} style={{ flex: 1 }} />
             <Button title="Get Started" onPress={() => close(true)} style={{ flex: 1 }} />
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
