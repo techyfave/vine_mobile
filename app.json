@@ -63,6 +63,12 @@
       },
       "router": {}
     },
-    "owner": "techyfave"
+    "owner": "techyfave",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fd9a9e85-60cd-41e0-9213-63ff969e7087"
+    }
   }
 }
