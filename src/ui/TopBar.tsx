@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { routes } from '@/lib/routes';
 import { useAuth } from '@/auth/AuthProvider';
 
 import { images } from './assets';
@@ -25,7 +26,7 @@ export function TopBar() {
           <SearchGlyph />
           <AppText color={colors.textMuted}>Search</AppText>
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Your profile" onPress={() => router.push('/profile/edit')}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Your profile" onPress={() => user && router.push(routes.profile(user.username))}>
           <Avatar uri={user?.profile_picture} size={34} />
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Menu" onPress={() => router.push('/menu')} style={styles.menu}>

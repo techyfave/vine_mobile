@@ -1,16 +1,33 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { memo, useState } from 'react';
-import { ActionSheetIOS, Alert, Platform, Pressable, Share, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 
-import { api } from '@/api/client';
+import { routes } from '@/lib/routes';
+import { errorMessage } from '@/api/errors';
+import { useAuth } from '@/auth/AuthProvider';
 import { remoteImage } from '@/lib/media';
 import { displayName, timeAgo } from '@/lib/time';
 import { icons } from '@/ui/assets';
 import { AppText, Avatar, Icon, Pop, PressableScale, Skeleton } from '@/ui/components';
+import { ActionSheet, type SheetAction } from '@/ui/ActionSheet';
+import { ImageViewer } from '@/ui/ImageViewer';
 import { colors, radius, space } from '@/ui/theme';
 
-import { type Post, totalReactions, useToggleLike, useToggleSave } from './api';
+import {
+  type Audience,
+  type Post,
+  REPORT_REASONS,
+  reportPost,
+  totalReactions,
+  useDeletePost,
+  useMuteOrBlock,
+  useSetAudience,
+  useToggleLike,
+  useToggleSave,
+} from './api';
+
+type Sheet = 'menu' | 'audience' | 'report' | null;
 
 const COLLAPSED_LINES = 6;
 
@@ -24,54 +41,107 @@ export const PostCard = memo(function PostCard({
   onHide?: (id: string) => void;
   inDetail?: boolean;
 }) {
+  const { user } = useAuth();
   const like = useToggleLike();
   const save = useToggleSave();
+  const del = useDeletePost();
+  const audience = useSetAudience();
+  const moderate = useMuteOrBlock();
   const [expanded, setExpanded] = useState(inDetail);
   const [canExpand, setCanExpand] = useState(false);
+  const [sheet, setSheet] = useState<Sheet>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
   const image = post.media.find((m) => m.media_type === 'image' && m.url);
+  const mine = user?.id === post.author.id;
   const open = () => !inDetail && router.push({ pathname: '/post/[id]', params: { id: post.id } });
+  const openProfile = () => router.push(routes.profile(post.author.username));
+  const name = `@${post.author.username}`;
 
-  function more() {
-    const name = `@${post.author.username}`;
-    const options = [`Mute ${name}`, `Block ${name}`, 'Cancel'];
-    const handle = async (i: number) => {
-      const path = { params: { path: { username: post.author.username } } };
-      if (i === 0) await api.POST('/api/v1/users/{username}/mute/', path);
-      if (i === 1) await api.POST('/api/v1/users/{username}/block/', path);
-      if (i === 0 || i === 1) onHide?.(post.id);
-    };
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions({ options, cancelButtonIndex: 2, destructiveButtonIndex: 1 }, handle);
-    } else {
-      Alert.alert('Post options', undefined, [
-        { text: options[0], onPress: () => handle(0) },
-        { text: options[1], style: 'destructive', onPress: () => handle(1) },
-        { text: 'Cancel', style: 'cancel' },
-      ]);
-    }
-  }
+  const fail = (err: unknown) => Alert.alert("Couldn't do that", errorMessage(err));
+
+  const menuActions: SheetAction[] = mine
+    ? [
+        { label: 'Edit post', onPress: () => router.push(routes.editPost(post.id)) },
+        {
+          label: 'Change audience',
+          hint: post.visibility === 'followers' ? 'Now: Followers' : 'Now: Public',
+          onPress: () => setSheet('audience'),
+        },
+        {
+          label: 'Delete post',
+          destructive: true,
+          onPress: () =>
+            Alert.alert('Delete this post?', "It will be removed for everyone. This can't be undone.", [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () =>
+                  del.mutate(post, {
+                    onSuccess: () => inDetail && router.back(),
+                    onError: fail,
+                  }),
+              },
+            ]),
+        },
+      ]
+    : [
+        { label: 'Report post', hint: 'Our team will review it', onPress: () => setSheet('report') },
+        {
+          label: `Mute ${name}`,
+          hint: "You won't see their posts. They won't know.",
+          onPress: () =>
+            moderate.mutate({ username: post.author.username, action: 'mute' }, { onSuccess: () => onHide?.(post.id), onError: fail }),
+        },
+        {
+          label: `Block ${name}`,
+          hint: "Neither of you will see the other's profile or posts.",
+          destructive: true,
+          onPress: () =>
+            moderate.mutate({ username: post.author.username, action: 'block' }, { onSuccess: () => onHide?.(post.id), onError: fail }),
+        },
+      ];
+
+  const audienceActions: SheetAction[] = (
+    [
+      { value: 'public', label: 'Public', hint: 'Anyone on Vine' },
+      { value: 'followers', label: 'Followers', hint: 'Only people who follow you' },
+    ] as { value: Audience; label: string; hint: string }[]
+  ).map((o) => ({
+    label: post.visibility === o.value ? `${o.label} ✓` : o.label,
+    hint: o.hint,
+    onPress: () => audience.mutate({ post, visibility: o.value }, { onError: fail }),
+  }));
+
+  const reportActions: SheetAction[] = REPORT_REASONS.map((r) => ({
+    label: r.label,
+    onPress: () =>
+      reportPost(post, r.value)
+        .then((msg) => Alert.alert('Report sent', msg))
+        .catch(fail),
+  }));
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.author}>
+        <Pressable style={styles.author} onPress={openProfile} accessibilityRole="link" accessibilityLabel={`${displayName(post.author)}'s profile`}>
           <Avatar uri={post.author.profile_picture} size={46} />
           <View style={{ gap: 2, flexShrink: 1 }}>
             <AppText variant="heading" numberOfLines={1}>
               {displayName(post.author)}
             </AppText>
             <AppText variant="caption" color={colors.textMuted}>
-              {timeAgo(post.created_at)}
+              {timeAgo(post.created_at)} · {post.visibility === 'followers' ? 'Followers' : 'Public'}
             </AppText>
           </View>
-        </View>
+        </Pressable>
         <View style={styles.headerActions}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Post options" hitSlop={10} onPress={more} style={styles.headerBtn}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Post options" hitSlop={10} onPress={() => setSheet('menu')} style={styles.headerBtn}>
             <AppText variant="heading" color={colors.link}>
               •••
             </AppText>
           </Pressable>
-          {onHide ? (
+          {onHide && !mine ? (
             <Pressable accessibilityRole="button" accessibilityLabel="Hide post" hitSlop={10} onPress={() => onHide(post.id)} style={styles.headerBtn}>
               <AppText variant="title" color={colors.link} style={{ lineHeight: 24 }}>
                 ×
@@ -103,7 +173,7 @@ export const PostCard = memo(function PostCard({
       ) : null}
 
       {image?.url ? (
-        <Pressable onPress={open} disabled={inDetail}>
+        <Pressable onPress={() => setViewing(image.url ?? null)} accessibilityRole="imagebutton" accessibilityLabel="View photo">
           <Image source={remoteImage(image.url)} style={styles.image} contentFit="cover" transition={200} accessibilityLabel="Post image" />
         </Pressable>
       ) : null}
@@ -130,6 +200,11 @@ export const PostCard = memo(function PostCard({
           pop
         />
       </View>
+
+      <ActionSheet visible={sheet === 'menu'} actions={menuActions} onClose={() => setSheet(null)} />
+      <ActionSheet visible={sheet === 'audience'} title="Who can see this post?" actions={audienceActions} onClose={() => setSheet(null)} />
+      <ActionSheet visible={sheet === 'report'} title="Why are you reporting this?" actions={reportActions} onClose={() => setSheet(null)} />
+      <ImageViewer uri={viewing} onClose={() => setViewing(null)} />
     </View>
   );
 });

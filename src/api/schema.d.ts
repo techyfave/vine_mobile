@@ -603,6 +603,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed/users/{username}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * User Posts
+         * @description A person's own posts for their profile: only what the viewer is allowed to see, newest first.
+         *
+         *     Page and group posts stay on their Page/group; blocked users are 'not found'.
+         */
+        get: operations["apps_feed_api_user_posts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/feed/posts/{post_id}/": {
         parameters: {
             query?: never;
@@ -620,6 +642,26 @@ export interface paths {
         head?: never;
         /** Patch Post Endpoint */
         patch: operations["apps_feed_api_patch_post_endpoint"];
+        trace?: never;
+    };
+    "/api/v1/feed/posts/{post_id}/report/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report Post
+         * @description Flag a post for review. Reporting the same post again updates the earlier report.
+         */
+        post: operations["apps_feed_api_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/feed/posts/{post_id}/react/": {
@@ -1341,6 +1383,13 @@ export interface components {
             location: string;
             /** Is Verified */
             is_verified: boolean;
+            /** Cover Photo */
+            cover_photo?: string | null;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
             /** Follower Count */
             follower_count: number;
             /** Following Count */
@@ -1453,6 +1502,19 @@ export interface components {
             scripture_reference?: string | null;
             /** Is Pinned */
             is_pinned?: boolean | null;
+        };
+        /** ReportCreateSchema */
+        ReportCreateSchema: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "spam" | "harassment" | "hate" | "violence" | "sexual" | "self_harm" | "false_info" | "other";
+            /**
+             * Details
+             * @default
+             */
+            details: string;
         };
         /** ReactionBodySchema */
         ReactionBodySchema: {
@@ -2675,6 +2737,31 @@ export interface operations {
             };
         };
     };
+    apps_feed_api_user_posts: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CursorPage_PostDetailSchema_"];
+                };
+            };
+        };
+    };
     apps_feed_api_get_post_endpoint: {
         parameters: {
             query?: never;
@@ -2740,6 +2827,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PostDetailSchema"];
                 };
+            };
+        };
+    };
+    apps_feed_api_report_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

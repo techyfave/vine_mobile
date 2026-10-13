@@ -1,13 +1,14 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { api, type Schemas } from '@/api/client';
 import { errorMessage, unwrap } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
 import { PostCard } from '@/features/feed/PostCard';
+import { useKeyboardHeight } from '@/lib/keyboard';
 import { displayName, timeAgo } from '@/lib/time';
 import { AppText, Avatar, Button, ErrorText } from '@/ui/components';
 import { colors, fonts, radius, space } from '@/ui/theme';
@@ -20,6 +21,7 @@ export default function PostDetail() {
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const [body, setBody] = useState('');
+  const keyboard = useKeyboardHeight();
 
   const post = useQuery({
     queryKey: ['post', id],
@@ -57,7 +59,7 @@ export default function PostDetail() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
+    <View style={{ flex: 1 }}>
       <FlatList<Comment>
         data={comments.data?.pages.flatMap((p) => p.results) ?? []}
         keyExtractor={(c) => c.id}
@@ -76,8 +78,16 @@ export default function PostDetail() {
         )}
         onEndReached={() => comments.hasNextPage && comments.fetchNextPage()}
         contentContainerStyle={{ padding: space.md, gap: space.md }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       />
-      <View style={[styles.composer, { paddingBottom: insets.bottom + space.sm }]}>
+      {/* Sits on top of the keyboard while typing (Android draws edge to edge, so nothing resizes for us). */}
+      <View style={[styles.composer, { paddingBottom: keyboard > 0 ? keyboard + space.sm : insets.bottom + space.sm }]}>
+        {send.error ? (
+          <View style={{ position: 'absolute', left: space.md, right: space.md, top: -22 }}>
+            <ErrorText>{errorMessage(send.error)}</ErrorText>
+          </View>
+        ) : null}
         <Avatar uri={user?.profile_picture} size={34} />
         <TextInput
           value={body}
@@ -90,8 +100,7 @@ export default function PostDetail() {
         />
         <Button title="Post" size="sm" onPress={() => send.mutate()} loading={send.isPending} disabled={!body.trim()} />
       </View>
-      {send.error ? <ErrorText>{errorMessage(send.error)}</ErrorText> : null}
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

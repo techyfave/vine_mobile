@@ -58,7 +58,9 @@ export default function AppLayout() {
         <Stack.Screen name="create-post" options={{ title: 'Create Post', presentation: 'modal' }} />
         <Stack.Screen name="menu" options={{ title: 'Menu' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings & Privacy' }} />
+        <Stack.Screen name="profile/[username]" options={{ title: 'Profile' }} />
         <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />
+        <Stack.Screen name="edit-post/[id]" options={{ title: 'Edit Post', presentation: 'modal' }} />
         <Stack.Screen name="saved" options={{ title: 'Saved' }} />
         <Stack.Screen name="search" options={{ title: 'Search' }} />
       </Stack>

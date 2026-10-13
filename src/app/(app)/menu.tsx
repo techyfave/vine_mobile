@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { routes } from '@/lib/routes';
 import { useAuth } from '@/auth/AuthProvider';
 import { displayName } from '@/lib/time';
 import { icons } from '@/ui/assets';
@@ -24,13 +25,16 @@ export default function Menu() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: space.md, gap: space.md }}>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/profile/edit')}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => user && router.push(routes.profile(user.username))}
+      >
         <Card style={styles.profile}>
           <Avatar uri={user?.profile_picture} size={52} />
           <View style={{ flex: 1 }}>
             <AppText variant="heading">{user ? displayName(user) : ''}</AppText>
             <AppText variant="caption" color={colors.textMuted}>
-              @{user?.username} · Edit profile
+              @{user?.username} · View profile
             </AppText>
           </View>
         </Card>

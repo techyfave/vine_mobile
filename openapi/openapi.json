@@ -1556,6 +1556,70 @@
         ]
       }
     },
+    "/api/v1/feed/users/{username}/": {
+      "get": {
+        "operationId": "apps_feed_api_user_posts",
+        "summary": "User Posts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "A person's own posts for their profile: only what the viewer is allowed to see, newest first.\n\nPage and group posts stay on their Page/group; blocked users are 'not found'.",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/feed/posts/{post_id}/": {
       "get": {
         "operationId": "apps_feed_api_get_post_endpoint",
@@ -1662,6 +1726,48 @@
         "tags": [
           "Feed"
         ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/report/": {
+      "post": {
+        "operationId": "apps_feed_api_report_post",
+        "summary": "Report Post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Flag a post for review. Reporting the same post again updates the earlier report.",
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
         "security": [
           {
             "JWTAuth": []
@@ -3547,6 +3653,22 @@
             "title": "Is Verified",
             "type": "boolean"
           },
+          "cover_photo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Photo"
+          },
+          "website": {
+            "default": "",
+            "title": "Website",
+            "type": "string"
+          },
           "follower_count": {
             "title": "Follower Count",
             "type": "integer"
@@ -3858,6 +3980,35 @@
           }
         },
         "title": "PostPatchSchema",
+        "type": "object"
+      },
+      "ReportCreateSchema": {
+        "properties": {
+          "reason": {
+            "enum": [
+              "spam",
+              "harassment",
+              "hate",
+              "violence",
+              "sexual",
+              "self_harm",
+              "false_info",
+              "other"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "details": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Details",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ReportCreateSchema",
         "type": "object"
       },
       "ReactionBodySchema": {
