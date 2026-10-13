@@ -122,22 +122,43 @@ export const api = createClient<paths>({ baseUrl: API_URL });
 api.use(authMiddleware);
 
 /**
- * Multipart upload (images). openapi-fetch sends JSON, so uploads go through fetch directly,
- * with the same auth headers and the same refresh-and-retry-once behaviour.
+ * Multipart upload (images), with the same auth headers and refresh-and-retry-once behaviour as `api`.
+ *
+ * Sent with XMLHttpRequest, not fetch: Expo's fetch only accepts Blob/File parts in FormData and
+ * rejects React Native's `{ uri, name, type }` file parts ("Unsupported FormDataPart
+ * implementation"). React Native's XMLHttpRequest streams those file URIs natively.
  */
 export async function uploadForm(path: string, build: () => FormData): Promise<unknown> {
-  const send = (token: string | null) =>
-    fetch(`${API_URL}${path}`, {
-      method: 'POST',
-      headers: { ...clientHeaders(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: build(),
-    });
-  let res = await send(getAccessToken());
+  let res = await sendMultipart(`${API_URL}${path}`, build(), getAccessToken());
   if (res.status === 401) {
     const fresh = await refreshAccessToken();
-    if (fresh) res = await send(fresh);
+    if (fresh) res = await sendMultipart(`${API_URL}${path}`, build(), fresh);
   }
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(res.status, body as ApiErrorBody);
-  return body;
+  if (res.status === 426) updateRequiredListeners.forEach((fn) => fn());
+  if (res.status < 200 || res.status >= 300) throw new ApiError(res.status, res.body as ApiErrorBody);
+  return res.body;
+}
+
+function sendMultipart(url: string, body: FormData, token: string | null): Promise<{ status: number; body: unknown }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    for (const [k, v] of Object.entries(clientHeaders())) xhr.setRequestHeader(k, v);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.timeout = 120_000; // large photos on slow networks
+    xhr.onload = () => {
+      let parsed: unknown = {};
+      try {
+        parsed = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+      } catch {
+        // non-JSON error page; keep {}
+      }
+      resolve({ status: xhr.status, body: parsed });
+    };
+    // Same message as fetch's, so errorMessage() shows "Can't reach Vine".
+    xhr.onerror = () => reject(new TypeError('Network request failed'));
+    xhr.ontimeout = () => reject(new TypeError('Network request failed (timed out)'));
+    xhr.send(body);
+  });
 }
