@@ -5,7 +5,8 @@ import Constants from 'expo-constants';
  * 1. EXPO_PUBLIC_API_URL (set per environment, e.g. in EAS env vars for preview/production builds).
  * 2. In development: the same computer that serves the app (Metro), on port 8000. A phone on the
  *    same Wi-Fi then reaches the local API with no setup, because "localhost" on a phone is the phone.
- * 3. app.json `extra.apiUrl`.
+ * 3. app.json `extra.apiUrl`: the staging API. Release builds and over-the-air updates (EAS Update)
+ *    fall back to this, because build-profile env vars in eas.json don't apply to updates.
  */
 function devServerApiUrl(): string | undefined {
   if (!__DEV__) return undefined;

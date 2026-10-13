@@ -4,6 +4,7 @@ import { memo, useState } from 'react';
 import { ActionSheetIOS, Alert, Platform, Pressable, Share, StyleSheet, View } from 'react-native';
 
 import { api } from '@/api/client';
+import { remoteImage } from '@/lib/media';
 import { displayName, timeAgo } from '@/lib/time';
 import { icons } from '@/ui/assets';
 import { AppText, Avatar, Icon, Pop, PressableScale, Skeleton } from '@/ui/components';
@@ -103,7 +104,7 @@ export const PostCard = memo(function PostCard({
 
       {image?.url ? (
         <Pressable onPress={open} disabled={inDetail}>
-          <Image source={{ uri: image.url }} style={styles.image} contentFit="cover" transition={200} accessibilityLabel="Post image" />
+          <Image source={remoteImage(image.url)} style={styles.image} contentFit="cover" transition={200} accessibilityLabel="Post image" />
         </Pressable>
       ) : null}
 

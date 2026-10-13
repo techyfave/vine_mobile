@@ -52,7 +52,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "http://localhost:8000",
+      "apiUrl": "https://vine-api-staging.onrender.com",
       "eas": {
         "projectId": "fd9a9e85-60cd-41e0-9213-63ff969e7087"
       },

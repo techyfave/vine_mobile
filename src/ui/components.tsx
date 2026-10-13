@@ -24,6 +24,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { remoteImage } from '@/lib/media';
+
 import { icons } from './assets';
 import { duration, spring, timing } from './motion';
 import { useRevealFocused } from './reveal';
@@ -76,7 +78,7 @@ export function Avatar({ uri, size = 44 }: { uri?: string | null; size?: number 
       }}
     >
       {uri ? (
-        <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="cover" transition={150} />
+        <Image source={remoteImage(uri)} style={{ width: '100%', height: '100%' }} contentFit="cover" transition={150} />
       ) : (
         <PersonGlyph size={size * 0.55} />
       )}
