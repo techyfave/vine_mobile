@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { memo, useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
@@ -6,12 +5,12 @@ import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 import { routes } from '@/lib/routes';
 import { errorMessage } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
-import { remoteImage } from '@/lib/media';
 import { displayName, timeAgo } from '@/lib/time';
 import { icons } from '@/ui/assets';
 import { AppText, Avatar, Icon, Pop, PressableScale, Skeleton } from '@/ui/components';
 import { ActionSheet, type SheetAction } from '@/ui/ActionSheet';
 import { ImageViewer } from '@/ui/ImageViewer';
+import { PhotoCarousel } from '@/ui/PhotoCarousel';
 import { colors, radius, space } from '@/ui/theme';
 
 import {
@@ -26,6 +25,7 @@ import {
   useToggleLike,
   useToggleSave,
 } from './api';
+import { LiftPanel } from './LiftPanel';
 
 type Sheet = 'menu' | 'audience' | 'report' | null;
 
@@ -50,8 +50,8 @@ export const PostCard = memo(function PostCard({
   const [expanded, setExpanded] = useState(inDetail);
   const [canExpand, setCanExpand] = useState(false);
   const [sheet, setSheet] = useState<Sheet>(null);
-  const [viewing, setViewing] = useState<string | null>(null);
-  const image = post.media.find((m) => m.media_type === 'image' && m.url);
+  const [viewing, setViewing] = useState<number | null>(null);
+  const photos = post.media.filter((m) => m.media_type === 'image' && m.url).map((m) => m.url as string);
   const mine = user?.id === post.author.id;
   const open = () => !inDetail && router.push({ pathname: '/post/[id]', params: { id: post.id } });
   const openProfile = () => router.push(routes.profile(post.author.username));
@@ -61,6 +61,9 @@ export const PostCard = memo(function PostCard({
 
   const menuActions: SheetAction[] = mine
     ? [
+        ...(post.lift
+          ? [{ label: 'Post a Lift update', hint: 'Everyone standing with you is told', onPress: () => router.push(routes.liftUpdate(post.id)) }]
+          : []),
         { label: 'Edit post', onPress: () => router.push(routes.editPost(post.id)) },
         {
           label: 'Change audience',
@@ -172,11 +175,9 @@ export const PostCard = memo(function PostCard({
         </AppText>
       ) : null}
 
-      {image?.url ? (
-        <Pressable onPress={() => setViewing(image.url ?? null)} accessibilityRole="imagebutton" accessibilityLabel="View photo">
-          <Image source={remoteImage(image.url)} style={styles.image} contentFit="cover" transition={200} accessibilityLabel="Post image" />
-        </Pressable>
-      ) : null}
+      {photos.length ? <PhotoCarousel urls={photos} onOpen={setViewing} /> : null}
+
+      {post.lift ? <LiftPanel post={post} mine={mine} inDetail={inDetail} /> : null}
 
       <View style={styles.actions}>
         <Action
@@ -204,7 +205,7 @@ export const PostCard = memo(function PostCard({
       <ActionSheet visible={sheet === 'menu'} actions={menuActions} onClose={() => setSheet(null)} />
       <ActionSheet visible={sheet === 'audience'} title="Who can see this post?" actions={audienceActions} onClose={() => setSheet(null)} />
       <ActionSheet visible={sheet === 'report'} title="Why are you reporting this?" actions={reportActions} onClose={() => setSheet(null)} />
-      <ImageViewer uri={viewing} onClose={() => setViewing(null)} />
+      <ImageViewer images={viewing === null ? null : photos} index={viewing ?? 0} onClose={() => setViewing(null)} />
     </View>
   );
 });
@@ -273,7 +274,6 @@ const styles = StyleSheet.create({
   author: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: { paddingHorizontal: 6, paddingVertical: 2 },
-  image: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.xl, backgroundColor: colors.cardMuted },
   actions: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', rowGap: space.sm },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 });

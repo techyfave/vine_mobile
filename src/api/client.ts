@@ -128,25 +128,39 @@ api.use(authMiddleware);
  * rejects React Native's `{ uri, name, type }` file parts ("Unsupported FormDataPart
  * implementation"). React Native's XMLHttpRequest streams those file URIs natively.
  */
-export async function uploadForm(path: string, build: () => FormData): Promise<unknown> {
-  let res = await sendMultipart(`${API_URL}${path}`, build(), getAccessToken());
+export async function uploadForm(
+  path: string,
+  build: () => FormData,
+  opts: { onProgress?: (fraction: number) => void } = {},
+): Promise<unknown> {
+  let res = await sendMultipart(`${API_URL}${path}`, build(), getAccessToken(), opts.onProgress);
   if (res.status === 401) {
     const fresh = await refreshAccessToken();
-    if (fresh) res = await sendMultipart(`${API_URL}${path}`, build(), fresh);
+    if (fresh) res = await sendMultipart(`${API_URL}${path}`, build(), fresh, opts.onProgress);
   }
   if (res.status === 426) updateRequiredListeners.forEach((fn) => fn());
   if (res.status < 200 || res.status >= 300) throw new ApiError(res.status, res.body as ApiErrorBody);
   return res.body;
 }
 
-function sendMultipart(url: string, body: FormData, token: string | null): Promise<{ status: number; body: unknown }> {
+function sendMultipart(
+  url: string,
+  body: FormData,
+  token: string | null,
+  onProgress?: (fraction: number) => void,
+): Promise<{ status: number; body: unknown }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', url);
     for (const [k, v] of Object.entries(clientHeaders())) xhr.setRequestHeader(k, v);
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.setRequestHeader('Accept', 'application/json');
-    xhr.timeout = 120_000; // large photos on slow networks
+    xhr.timeout = 180_000; // several photos on slow networks
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && e.total > 0) onProgress(e.loaded / e.total);
+      };
+    }
     xhr.onload = () => {
       let parsed: unknown = {};
       try {

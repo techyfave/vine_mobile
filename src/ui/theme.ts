@@ -18,6 +18,9 @@ export const colors = {
   live: '#E5383B',
   danger: '#C62828',
   overlay: 'rgba(38, 74, 116, 0.5)',
+  lift: '#C9822B', // warm gold: Lift (prayer and support) accents
+  liftSoft: '#FDF4E7',
+  liftBorder: '#F2D7AE',
 } as const;
 
 /**

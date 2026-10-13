@@ -575,7 +575,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Post Endpoint */
+        /**
+         * Create Post Endpoint
+         * @description Create a post: text, up to MAX_POST_IMAGES photos (`uploads`, or the older single `upload`),
+         *     and optionally a Lift (a request for prayer or support).
+         */
         post: operations["apps_feed_api_create_post_endpoint"];
         delete?: never;
         options?: never;
@@ -807,6 +811,106 @@ export interface paths {
          *     live reaction COUNT across all posts doesn't scale and isn't explainable.
          */
         get: operations["apps_feed_api_explore_feed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed/posts/{post_id}/lift/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lift Respond
+         * @description Answer a Lift with "I'll pray" or "I'm with you". Answering again changes your answer.
+         */
+        post: operations["apps_feed_api_lift_respond"];
+        /** Lift Unrespond */
+        delete: operations["apps_feed_api_lift_unrespond"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed/posts/{post_id}/lift/people/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lift People
+         * @description Who is praying for / standing with this person, newest first.
+         */
+        get: operations["apps_feed_api_lift_people"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed/posts/{post_id}/lift/updates/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lift Add Update
+         * @description The author shares how things are going, or a testimony. Everyone who answered is told.
+         */
+        post: operations["apps_feed_api_lift_add_update"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed/posts/{post_id}/lift/updates/{update_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Lift Delete Update */
+        delete: operations["apps_feed_api_lift_delete_update"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed/lifts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lifts Feed
+         * @description Lifts the viewer can see, from everyone (not just people they follow), newest first.
+         *
+         *     `answered=true` lists testimonies instead.
+         */
+        get: operations["apps_feed_api_lifts_feed"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1412,6 +1516,35 @@ export interface components {
             /** Blocked */
             blocked: boolean;
         };
+        /** LiftSchema */
+        LiftSchema: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "pray_or_support" | "support_only";
+            /** Answered */
+            answered: boolean;
+            /** Pray Count */
+            pray_count: number;
+            /** With You Count */
+            with_you_count: number;
+            /** My Response */
+            my_response?: ("pray" | "with_you") | null;
+            /** Updates */
+            updates: components["schemas"]["LiftUpdateSchema"][];
+        };
+        /** LiftUpdateSchema */
+        LiftUpdateSchema: {
+            /** Id */
+            id: string;
+            /** Body */
+            body: string;
+            /** Is Testimony */
+            is_testimony: boolean;
+            /** Created At */
+            created_at: string;
+        };
         /** PostAuthorSchema */
         PostAuthorSchema: {
             /** Id */
@@ -1463,6 +1596,7 @@ export interface components {
              * @default false
              */
             is_bookmarked: boolean;
+            lift?: components["schemas"]["LiftSchema"] | null;
         };
         /** PostMediaSchema */
         PostMediaSchema: {
@@ -1576,6 +1710,42 @@ export interface components {
              * @default
              */
             note: string;
+        };
+        /** LiftRespondSchema */
+        LiftRespondSchema: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "pray" | "with_you";
+        };
+        /** CursorPage[LiftPersonSchema] */
+        CursorPage_LiftPersonSchema_: {
+            /** Results */
+            results: components["schemas"]["LiftPersonSchema"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** LiftPersonSchema */
+        LiftPersonSchema: {
+            user: components["schemas"]["CommentAuthorSchema"];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "pray" | "with_you";
+            /** Created At */
+            created_at: string;
+        };
+        /** LiftUpdateCreateSchema */
+        LiftUpdateCreateSchema: {
+            /** Body */
+            body: string;
+            /**
+             * Is Testimony
+             * @default false
+             */
+            is_testimony: boolean;
         };
         /** PageCreateSchema */
         PageCreateSchema: {
@@ -2663,16 +2833,14 @@ export interface operations {
     };
     apps_feed_api_create_post_endpoint: {
         parameters: {
-            query?: {
-                upload?: string | null;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/x-www-form-urlencoded": {
+                "multipart/form-data": {
                     /**
                      * Visibility
                      * @default public
@@ -2699,6 +2867,16 @@ export interface operations {
                     page_slug?: string | null;
                     /** Group Slug */
                     group_slug?: string | null;
+                    /**
+                     * Lift Mode
+                     * @default
+                     * @enum {string}
+                     */
+                    lift_mode?: "" | "pray_or_support" | "support_only";
+                    /** Upload */
+                    upload?: string | null;
+                    /** Uploads */
+                    uploads?: string[] | null;
                 };
             };
         };
@@ -3081,6 +3259,144 @@ export interface operations {
             query?: {
                 cursor?: string | null;
                 limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CursorPage_PostDetailSchema_"];
+                };
+            };
+        };
+    };
+    apps_feed_api_lift_respond: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiftRespondSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_feed_api_lift_unrespond: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_feed_api_lift_people: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CursorPage_LiftPersonSchema_"];
+                };
+            };
+        };
+    };
+    apps_feed_api_lift_add_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiftUpdateCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_feed_api_lift_delete_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+                update_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_feed_api_lifts_feed: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+                answered?: boolean | null;
             };
             header?: never;
             path?: never;

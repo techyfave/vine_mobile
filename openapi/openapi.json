@@ -3,7 +3,7 @@
   "info": {
     "title": "Vine API",
     "version": "1.0",
-    "description": "Vine — Christian social platform API"
+    "description": "Vine \u2014 Christian social platform API"
   },
   "paths": {
     "/api/v1/meta/": {
@@ -1392,25 +1392,7 @@
       "post": {
         "operationId": "apps_feed_api_create_post_endpoint",
         "summary": "Create Post Endpoint",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "upload",
-            "schema": {
-              "anyOf": [
-                {
-                  "format": "binary",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Upload"
-            },
-            "required": false
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "OK",
@@ -1423,14 +1405,15 @@
             }
           }
         },
+        "description": "Create a post: text, up to MAX_POST_IMAGES photos (`uploads`, or the older single `upload`),\nand optionally a Lift (a request for prayer or support).",
         "tags": [
           "Feed"
         ],
         "requestBody": {
           "content": {
-            "application/x-www-form-urlencoded": {
+            "multipart/form-data": {
               "schema": {
-                "title": "FormParams",
+                "title": "MultiPartBodyParams",
                 "type": "object",
                 "properties": {
                   "visibility": {
@@ -1487,6 +1470,43 @@
                       }
                     ],
                     "title": "Group Slug"
+                  },
+                  "lift_mode": {
+                    "default": "",
+                    "enum": [
+                      "",
+                      "pray_or_support",
+                      "support_only"
+                    ],
+                    "title": "Lift Mode",
+                    "type": "string"
+                  },
+                  "upload": {
+                    "anyOf": [
+                      {
+                        "format": "binary",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Upload"
+                  },
+                  "uploads": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "format": "binary",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Uploads"
                   }
                 }
               }
@@ -2218,7 +2238,297 @@
             }
           }
         },
-        "description": "Public posts from people the viewer doesn't follow, newest first.\n\nDeliberately simple until ranking is designed (see roadmap §8A): sorting by a\nlive reaction COUNT across all posts doesn't scale and isn't explainable.",
+        "description": "Public posts from people the viewer doesn't follow, newest first.\n\nDeliberately simple until ranking is designed (see roadmap \u00a78A): sorting by a\nlive reaction COUNT across all posts doesn't scale and isn't explainable.",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/lift/": {
+      "post": {
+        "operationId": "apps_feed_api_lift_respond",
+        "summary": "Lift Respond",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Answer a Lift with \"I'll pray\" or \"I'm with you\". Answering again changes your answer.",
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiftRespondSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_feed_api_lift_unrespond",
+        "summary": "Lift Unrespond",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/lift/people/": {
+      "get": {
+        "operationId": "apps_feed_api_lift_people",
+        "summary": "Lift People",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 30,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_LiftPersonSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Who is praying for / standing with this person, newest first.",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/lift/updates/": {
+      "post": {
+        "operationId": "apps_feed_api_lift_add_update",
+        "summary": "Lift Add Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "The author shares how things are going, or a testimony. Everyone who answered is told.",
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiftUpdateCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/posts/{post_id}/lift/updates/{update_id}/": {
+      "delete": {
+        "operationId": "apps_feed_api_lift_delete_update",
+        "summary": "Lift Delete Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "update_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Update Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/feed/lifts/": {
+      "get": {
+        "operationId": "apps_feed_api_lifts_feed",
+        "summary": "Lifts Feed",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "answered",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Answered"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPage_PostDetailSchema_"
+                }
+              }
+            }
+          }
+        },
+        "description": "Lifts the viewer can see, from everyone (not just people they follow), newest first.\n\n`answered=true` lists testimonies instead.",
         "tags": [
           "Feed"
         ],
@@ -3728,6 +4038,89 @@
         "title": "RelationshipSchema",
         "type": "object"
       },
+      "LiftSchema": {
+        "properties": {
+          "mode": {
+            "enum": [
+              "pray_or_support",
+              "support_only"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "answered": {
+            "title": "Answered",
+            "type": "boolean"
+          },
+          "pray_count": {
+            "title": "Pray Count",
+            "type": "integer"
+          },
+          "with_you_count": {
+            "title": "With You Count",
+            "type": "integer"
+          },
+          "my_response": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pray",
+                  "with_you"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "My Response"
+          },
+          "updates": {
+            "items": {
+              "$ref": "#/components/schemas/LiftUpdateSchema"
+            },
+            "title": "Updates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mode",
+          "answered",
+          "pray_count",
+          "with_you_count",
+          "updates"
+        ],
+        "title": "LiftSchema",
+        "type": "object"
+      },
+      "LiftUpdateSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "is_testimony": {
+            "title": "Is Testimony",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "is_testimony",
+          "created_at"
+        ],
+        "title": "LiftUpdateSchema",
+        "type": "object"
+      },
       "PostAuthorSchema": {
         "properties": {
           "id": {
@@ -3834,6 +4227,16 @@
             "default": false,
             "title": "Is Bookmarked",
             "type": "boolean"
+          },
+          "lift": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiftSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -4177,6 +4580,96 @@
           }
         },
         "title": "ShareBodySchema",
+        "type": "object"
+      },
+      "LiftRespondSchema": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "pray",
+              "with_you"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "LiftRespondSchema",
+        "type": "object"
+      },
+      "CursorPage_LiftPersonSchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/LiftPersonSchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[LiftPersonSchema]",
+        "type": "object"
+      },
+      "LiftPersonSchema": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/CommentAuthorSchema"
+          },
+          "kind": {
+            "enum": [
+              "pray",
+              "with_you"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "kind",
+          "created_at"
+        ],
+        "title": "LiftPersonSchema",
+        "type": "object"
+      },
+      "LiftUpdateCreateSchema": {
+        "properties": {
+          "body": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "is_testimony": {
+            "default": false,
+            "title": "Is Testimony",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "LiftUpdateCreateSchema",
         "type": "object"
       },
       "PageCreateSchema": {

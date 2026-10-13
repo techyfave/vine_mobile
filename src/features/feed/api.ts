@@ -135,3 +135,75 @@ export function useMuteOrBlock() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['feed'] }),
   });
 }
+
+// --- Lift: asking people to pray for you or stand with you ------------------------------
+
+export type Lift = Schemas['LiftSchema'];
+export type LiftKind = 'pray' | 'with_you';
+export type LiftMode = Lift['mode'];
+
+type LiftResult = { lift: Lift };
+
+/** Answer a Lift ("I'll pray" / "I'm with you"), change the answer, or take it back (kind: null). */
+export function useLiftRespond() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ post, kind }: { post: Post; kind: LiftKind | null }) => {
+      const path = { params: { path: { post_id: post.id } } };
+      const res = kind
+        ? unwrap(await api.POST('/api/v1/feed/posts/{post_id}/lift/', { ...path, body: { kind } }))
+        : unwrap(await api.DELETE('/api/v1/feed/posts/{post_id}/lift/', path));
+      return (res as unknown as LiftResult).lift;
+    },
+    onMutate: ({ post, kind }) =>
+      patchPost(qc, post.id, (p) => {
+        if (!p.lift) return p;
+        const l = { ...p.lift };
+        const bump = (k: LiftKind | null | undefined, by: number) => {
+          if (k === 'pray') l.pray_count = Math.max(0, l.pray_count + by);
+          if (k === 'with_you') l.with_you_count = Math.max(0, l.with_you_count + by);
+        };
+        bump(l.my_response, -1);
+        bump(kind, 1);
+        l.my_response = kind;
+        return { ...p, lift: l };
+      }),
+    onSuccess: (lift, { post }) => patchPost(qc, post.id, (p) => ({ ...p, lift })),
+    onError: () => qc.invalidateQueries({ queryKey: ['feed'] }),
+  });
+}
+
+/** The author shares an update, or a testimony when it's answered. */
+export function useLiftUpdate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ postId, body, testimony }: { postId: string; body: string; testimony: boolean }) => {
+      const res = unwrap(
+        await api.POST('/api/v1/feed/posts/{post_id}/lift/updates/', {
+          params: { path: { post_id: postId } },
+          body: { body, is_testimony: testimony },
+        }),
+      );
+      return (res as unknown as LiftResult).lift;
+    },
+    onSuccess: (lift, { postId }) => {
+      patchPost(qc, postId, (p) => ({ ...p, lift }));
+      qc.invalidateQueries({ queryKey: ['feed', 'lifts'] });
+    },
+  });
+}
+
+export function useDeleteLiftUpdate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ postId, updateId }: { postId: string; updateId: string }) => {
+      const res = unwrap(
+        await api.DELETE('/api/v1/feed/posts/{post_id}/lift/updates/{update_id}/', {
+          params: { path: { post_id: postId, update_id: updateId } },
+        }),
+      );
+      return (res as unknown as LiftResult).lift;
+    },
+    onSuccess: (lift, { postId }) => patchPost(qc, postId, (p) => ({ ...p, lift })),
+  });
+}

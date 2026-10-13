@@ -67,7 +67,7 @@ export default function EditPost() {
       />
       {hasImage ? (
         <AppText variant="caption" color={colors.textMuted}>
-          The photo stays as it is. To change it, delete the post and share it again.
+          Photos stay as they are. To change them, delete the post and share it again.
         </AppText>
       ) : null}
       {edit.error ? <ErrorText>{errorMessage(edit.error)}</ErrorText> : null}
