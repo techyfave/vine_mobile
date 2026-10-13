@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Application from 'expo-application';
+import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -79,7 +81,54 @@ export default function Settings() {
           }
         />
       </Card>
+      <AboutApp />
     </ScrollView>
+  );
+}
+
+/** Which build and update this phone is running, plus a manual "check for updates". */
+function AboutApp() {
+  const [status, setStatus] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const updateId = Updates.updateId ? Updates.updateId.slice(0, 8) : 'built-in';
+  const published = Updates.createdAt ? Updates.createdAt.toLocaleString() : null;
+
+  async function check() {
+    if (!Updates.isEnabled) {
+      setStatus('Updates are off in development builds. Metro serves the latest code.');
+      return;
+    }
+    setBusy(true);
+    setStatus(null);
+    try {
+      const found = await Updates.checkForUpdateAsync();
+      if (!found.isAvailable) {
+        setStatus("You're on the latest update.");
+        return;
+      }
+      setStatus('Downloading the new update…');
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    } catch (err) {
+      setStatus(`Couldn't check: ${errorMessage(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card style={{ gap: space.sm }}>
+      <AppText variant="heading">About this app</AppText>
+      <AppText variant="caption" color={colors.textMuted}>
+        Version {Application.nativeApplicationVersion ?? '?'} ({Application.nativeBuildVersion ?? '?'}) · {Updates.channel || 'no channel'}
+      </AppText>
+      <AppText variant="caption" color={colors.textMuted}>
+        Update {updateId}
+        {published ? ` · published ${published}` : ''}
+      </AppText>
+      {status ? <AppText variant="caption">{status}</AppText> : null}
+      <Button title="Check for updates" size="sm" variant="outline" loading={busy} onPress={check} />
+    </Card>
   );
 }
 

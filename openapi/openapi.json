@@ -899,6 +899,59 @@
         ]
       }
     },
+    "/api/v1/users/me/connections/": {
+      "get": {
+        "operationId": "apps_users_api_my_connections",
+        "summary": "My Connections",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "People you follow or who follow you (for \"Send to\"), optionally filtered by name.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/users/me/blocked/": {
       "get": {
         "operationId": "apps_users_api_my_blocked",
@@ -2618,6 +2671,48 @@
         ]
       }
     },
+    "/api/v1/feed/posts/{post_id}/send/": {
+      "post": {
+        "operationId": "apps_feed_api_send_post_endpoint",
+        "summary": "Send Post Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Send a post to up to 10 people on Vine. They get a notification that opens the post.\n\nOnly to people you follow or who follow you (keeps it from being used to spam or target\nstrangers), only if they're allowed to see the post, and never across a block.",
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendPostSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/pages/": {
       "post": {
         "operationId": "apps_pages_api_create_page",
@@ -3891,50 +3986,6 @@
         "title": "UpdateProfileSchema",
         "type": "object"
       },
-      "CursorPage_FollowEntrySchema_": {
-        "properties": {
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/FollowEntrySchema"
-            },
-            "title": "Results",
-            "type": "array"
-          },
-          "next_cursor": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Cursor"
-          }
-        },
-        "required": [
-          "results"
-        ],
-        "title": "CursorPage[FollowEntrySchema]",
-        "type": "object"
-      },
-      "FollowEntrySchema": {
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/PersonSchema"
-          },
-          "since": {
-            "title": "Since",
-            "type": "string"
-          }
-        },
-        "required": [
-          "user",
-          "since"
-        ],
-        "title": "FollowEntrySchema",
-        "type": "object"
-      },
       "PersonSchema": {
         "description": "A person in a list (search, followers, following), with how the viewer relates to them.",
         "properties": {
@@ -4008,6 +4059,50 @@
           "is_verified"
         ],
         "title": "PersonSchema",
+        "type": "object"
+      },
+      "CursorPage_FollowEntrySchema_": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/FollowEntrySchema"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "CursorPage[FollowEntrySchema]",
+        "type": "object"
+      },
+      "FollowEntrySchema": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/PersonSchema"
+          },
+          "since": {
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "since"
+        ],
+        "title": "FollowEntrySchema",
         "type": "object"
       },
       "ProfileSchema": {
@@ -4811,6 +4906,30 @@
           }
         },
         "title": "RepostCreateSchema",
+        "type": "object"
+      },
+      "SendPostSchema": {
+        "properties": {
+          "usernames": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Usernames",
+            "type": "array"
+          },
+          "note": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "usernames"
+        ],
+        "title": "SendPostSchema",
         "type": "object"
       },
       "PageCreateSchema": {

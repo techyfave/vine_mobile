@@ -190,6 +190,7 @@ const PostCardBody = memo(function PostCardBody({
           { label: 'Repost with your thoughts', hint: 'Add a few words of your own', onPress: () => router.push(routes.repost(post.id)) },
         ].filter((a): a is SheetAction => a !== null)
       : []),
+    { label: 'Send to someone on Vine', hint: 'People you follow or who follow you', onPress: () => router.push(routes.sendPost(post.id)) },
     { label: 'Share outside Vine', hint: canRepost ? undefined : 'Only public posts can be reposted', onPress: shareOutside },
   ];
 

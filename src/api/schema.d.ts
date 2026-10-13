@@ -404,6 +404,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/me/connections/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Connections
+         * @description People you follow or who follow you (for "Send to"), optionally filtered by name.
+         */
+        get: operations["apps_users_api_my_connections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/me/blocked/": {
         parameters: {
             query?: never;
@@ -946,6 +966,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed/posts/{post_id}/send/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Post Endpoint
+         * @description Send a post to up to 10 people on Vine. They get a notification that opens the post.
+         *
+         *     Only to people you follow or who follow you (keeps it from being used to spam or target
+         *     strangers), only if they're allowed to see the post, and never across a block.
+         */
+        post: operations["apps_feed_api_send_post_endpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pages/": {
         parameters: {
             query?: never;
@@ -1442,19 +1485,6 @@ export interface components {
             /** Date Of Birth */
             date_of_birth?: string | null;
         };
-        /** CursorPage[FollowEntrySchema] */
-        CursorPage_FollowEntrySchema_: {
-            /** Results */
-            results: components["schemas"]["FollowEntrySchema"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        };
-        /** FollowEntrySchema */
-        FollowEntrySchema: {
-            user: components["schemas"]["PersonSchema"];
-            /** Since */
-            since: string;
-        };
         /**
          * PersonSchema
          * @description A person in a list (search, followers, following), with how the viewer relates to them.
@@ -1502,6 +1532,19 @@ export interface components {
              * @default false
              */
             followed_by: boolean;
+        };
+        /** CursorPage[FollowEntrySchema] */
+        CursorPage_FollowEntrySchema_: {
+            /** Results */
+            results: components["schemas"]["FollowEntrySchema"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** FollowEntrySchema */
+        FollowEntrySchema: {
+            user: components["schemas"]["PersonSchema"];
+            /** Since */
+            since: string;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -1821,6 +1864,16 @@ export interface components {
              * @enum {string}
              */
             visibility: "public" | "followers";
+        };
+        /** SendPostSchema */
+        SendPostSchema: {
+            /** Usernames */
+            usernames: string[];
+            /**
+             * Note
+             * @default
+             */
+            note: string;
         };
         /** PageCreateSchema */
         PageCreateSchema: {
@@ -2643,6 +2696,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    apps_users_api_my_connections: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonSchema"][];
+                };
             };
         };
     };
@@ -3526,6 +3602,30 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_feed_api_send_post_endpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendPostSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

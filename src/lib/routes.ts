@@ -10,6 +10,7 @@ export const routes = {
   liftUpdate: (id: string, testimony = false) => `/lift-update/${encodeURIComponent(id)}${testimony ? '?testimony=1' : ''}` as Href,
   people: (username: string, tab: 'followers' | 'following') =>
     `/people/${encodeURIComponent(username)}?tab=${tab}` as Href,
+  sendPost: (id: string) => `/send-post/${encodeURIComponent(id)}` as Href,
   repost: (id: string) => `/repost/${encodeURIComponent(id)}` as Href,
   liftPeople: (id: string) => `/lift-people/${encodeURIComponent(id)}` as Href,
 };
