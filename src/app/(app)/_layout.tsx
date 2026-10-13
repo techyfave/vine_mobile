@@ -61,6 +61,8 @@ export default function AppLayout() {
         <Stack.Screen name="profile/[username]" options={{ title: 'Profile' }} />
         <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />
         <Stack.Screen name="edit-post/[id]" options={{ title: 'Edit Post', presentation: 'modal' }} />
+        <Stack.Screen name="people/[username]" options={{ title: 'People' }} />
+        <Stack.Screen name="repost/[id]" options={{ title: 'Repost', presentation: 'modal' }} />
         <Stack.Screen name="lift-update/[id]" options={{ title: 'Lift update', presentation: 'modal' }} />
         <Stack.Screen name="lift-people/[id]" options={{ title: 'Prayer & support' }} />
         <Stack.Screen name="saved" options={{ title: 'Saved' }} />

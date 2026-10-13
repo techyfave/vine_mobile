@@ -1,15 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { api } from '@/api/client';
 import { unwrap } from '@/api/errors';
-import { displayName } from '@/lib/time';
-import { AppText, Avatar, Button, Input } from '@/ui/components';
-import { colors, radius, space } from '@/ui/theme';
+import { PersonRow } from '@/features/people/PersonRow';
+import { AppText, Input } from '@/ui/components';
+import { enter, staggerDelay } from '@/ui/motion';
+import { colors, space } from '@/ui/theme';
 
+/** Find people by name or username; tap someone to open their profile. */
 export default function Search() {
-  const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [debounced, setDebounced] = useState('');
   useEffect(() => {
@@ -22,11 +24,6 @@ export default function Search() {
     enabled: debounced.length >= 2,
     queryFn: async () => unwrap(await api.GET('/api/v1/users/search/', { params: { query: { q: debounced } } })),
   });
-  const follow = useMutation({
-    mutationFn: async (username: string) =>
-      unwrap(await api.POST('/api/v1/users/{username}/follow/', { params: { path: { username } } })),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['feed'] }),
-  });
 
   return (
     <View style={{ flex: 1, padding: space.md, gap: space.md }}>
@@ -35,17 +32,11 @@ export default function Search() {
         data={results.data ?? []}
         keyExtractor={(u) => u.id}
         contentContainerStyle={{ gap: space.sm }}
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Avatar uri={item.profile_picture} size={42} />
-            <View style={{ flex: 1 }}>
-              <AppText variant="bodyBold">{displayName(item)}</AppText>
-              <AppText variant="caption" color={colors.textMuted}>
-                @{item.username}
-              </AppText>
-            </View>
-            <Button title="Follow" size="sm" onPress={() => follow.mutate(item.username)} />
-          </View>
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item, index }) => (
+          <Animated.View entering={enter.rise(staggerDelay(index))}>
+            <PersonRow person={item} />
+          </Animated.View>
         )}
         ListEmptyComponent={
           debounced.length >= 2 && !results.isLoading ? (
@@ -58,7 +49,3 @@ export default function Search() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.white, borderRadius: radius.lg, padding: space.md },
-});

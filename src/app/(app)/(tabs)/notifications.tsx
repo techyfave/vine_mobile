@@ -1,13 +1,15 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { api, type Schemas } from '@/api/client';
 import { unwrap } from '@/api/errors';
+import { FollowButton } from '@/features/people/follow';
+import { routes } from '@/lib/routes';
 import { timeAgo } from '@/lib/time';
-import { AppText, Avatar, Button, PressableScale, Skeleton } from '@/ui/components';
+import { AppText, Avatar, PressableScale, Skeleton } from '@/ui/components';
 import { enter, layout, staggerDelay } from '@/ui/motion';
 import { TopBar } from '@/ui/TopBar';
 import { colors, radius, space } from '@/ui/theme';
@@ -37,12 +39,6 @@ export default function Notifications() {
     }, []),
   );
 
-  const followBack = useMutation({
-    mutationFn: async (username: string) =>
-      unwrap(await api.POST('/api/v1/users/{username}/follow/', { params: { path: { username } } })),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', 'list'] }),
-  });
-
   const items = list.data?.pages.flatMap((p) => p.results) ?? [];
   const seen = useRef(new Set<string>());
 
@@ -69,7 +65,7 @@ export default function Notifications() {
             seen.current.add(item.id);
             return (
               <Animated.View entering={fresh ? enter.rise(staggerDelay(index % 20)) : undefined}>
-                <NotificationRow item={item} onFollowBack={(u) => followBack.mutate(u)} following={followBack.isPending} />
+                <NotificationRow item={item} />
               </Animated.View>
             );
           }}
@@ -99,24 +95,22 @@ export default function Notifications() {
   );
 }
 
-function NotificationRow({
-  item,
-  onFollowBack,
-  following,
-}: {
-  item: Notification;
-  onFollowBack: (username: string) => void;
-  following: boolean;
-}) {
-  const showFollowBack = item.type === 'follow' && item.actor && !item.viewer_follows_actor;
+function NotificationRow({ item }: { item: Notification }) {
+  const isFollow = item.type === 'follow';
+  const open = () => {
+    if (item.post_id) router.push({ pathname: '/post/[id]', params: { id: item.post_id } });
+    else if (item.actor) router.push(routes.profile(item.actor.username));
+  };
   return (
-    <PressableScale
-      accessibilityRole="button"
-      onPress={() => item.post_id && router.push({ pathname: '/post/[id]', params: { id: item.post_id } })}
-      scaleTo={0.98}
-      style={[styles.row, !item.is_read && styles.unread]}
-    >
-      <Avatar uri={item.actor?.profile_picture} size={40} />
+    <PressableScale accessibilityRole="button" onPress={open} scaleTo={0.98} style={[styles.row, !item.is_read && styles.unread]}>
+      <Pressable
+        onPress={() => item.actor && router.push(routes.profile(item.actor.username))}
+        disabled={!item.actor}
+        accessibilityRole="link"
+        accessibilityLabel="Open profile"
+      >
+        <Avatar uri={item.actor?.profile_picture} size={40} />
+      </Pressable>
       <View style={{ flex: 1, gap: 2 }}>
         <AppText variant="bodyBold" numberOfLines={2}>
           {item.message}
@@ -125,8 +119,8 @@ function NotificationRow({
           {timeAgo(item.created_at)}
         </AppText>
       </View>
-      {showFollowBack ? (
-        <Button title="Follow back" size="sm" loading={following} onPress={() => onFollowBack(item.actor!.username)} />
+      {isFollow && item.actor ? (
+        <FollowButton username={item.actor.username} following={Boolean(item.viewer_follows_actor)} followedBy size="sm" />
       ) : null}
     </PressableScale>
   );

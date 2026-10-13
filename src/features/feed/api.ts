@@ -8,10 +8,16 @@ type Page = Schemas['CursorPage_PostDetailSchema_'];
 
 /** Apply a change to a post everywhere it's cached (feeds, detail) for instant feedback. */
 function patchPost(qc: QueryClient, id: string, fn: (p: Post) => Post) {
+  // A post can also appear inside someone's repost, so patch it there too.
+  const apply = (p: Post): Post => {
+    if (p.id === id) return fn(p);
+    if (p.repost_of?.id === id) return { ...p, repost_of: fn(p.repost_of) };
+    return p;
+  };
   qc.setQueriesData<InfiniteData<Page>>({ queryKey: ['feed'] }, (data) =>
-    data ? { ...data, pages: data.pages.map((pg) => ({ ...pg, results: pg.results.map((p) => (p.id === id ? fn(p) : p)) })) } : data,
+    data ? { ...data, pages: data.pages.map((pg) => ({ ...pg, results: pg.results.map(apply) })) } : data,
   );
-  qc.setQueryData<Post>(['post', id], (p) => (p ? fn(p) : p));
+  qc.setQueriesData<Post>({ queryKey: ['post'] }, (p) => (p ? apply(p) : p));
 }
 
 export function useToggleLike() {
@@ -205,5 +211,49 @@ export function useDeleteLiftUpdate() {
       return (res as unknown as LiftResult).lift;
     },
     onSuccess: (lift, { postId }) => patchPost(qc, postId, (p) => ({ ...p, lift })),
+  });
+}
+
+
+// --- Reposts ---------------------------------------------------------------------------
+
+/** Repost (or undo your repost of) a post. Works on reposts too: it always shares the original. */
+export function useToggleRepost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (post: Post) => {
+      const path = { params: { path: { post_id: post.id } } };
+      if (post.my_reposted) unwrap(await api.DELETE('/api/v1/feed/posts/{post_id}/repost/', path));
+      else unwrap(await api.POST('/api/v1/feed/posts/{post_id}/repost/', { ...path, body: { note: '', visibility: 'public' } }));
+    },
+    onMutate: (post) =>
+      patchPost(qc, post.id, (p) => ({
+        ...p,
+        my_reposted: !p.my_reposted,
+        repost_count: Math.max(0, (p.repost_count ?? 0) + (p.my_reposted ? -1 : 1)),
+      })),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['feed', 'home'] });
+      qc.invalidateQueries({ queryKey: ['feed', 'user'] });
+    },
+  });
+}
+
+/** Repost with your own words (a quote). */
+export function useQuoteRepost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ postId, note, visibility }: { postId: string; note: string; visibility: Audience }) =>
+      unwrap(
+        await api.POST('/api/v1/feed/posts/{post_id}/repost/', {
+          params: { path: { post_id: postId } },
+          body: { note, visibility },
+        }),
+      ),
+    onSuccess: (_, { postId }) => {
+      patchPost(qc, postId, (p) => ({ ...p, repost_count: (p.repost_count ?? 0) + 1 }));
+      qc.invalidateQueries({ queryKey: ['feed', 'home'] });
+      qc.invalidateQueries({ queryKey: ['feed', 'user'] });
+    },
   });
 }

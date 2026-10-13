@@ -919,6 +919,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed/posts/{post_id}/repost/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Repost Endpoint
+         * @description Repost a post to your followers, optionally with your own words (a quote).
+         *
+         *     Reposting a repost shares the original. A plain repost happens once per post (repeating it
+         *     returns the existing one). Only posts everyone can already see can be reposted.
+         */
+        post: operations["apps_feed_api_repost_endpoint"];
+        /**
+         * Undo Repost Endpoint
+         * @description Undo your plain repost of this post (quote reposts are deleted like any other post).
+         */
+        delete: operations["apps_feed_api_undo_repost_endpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pages/": {
         parameters: {
             query?: never;
@@ -1424,12 +1451,15 @@ export interface components {
         };
         /** FollowEntrySchema */
         FollowEntrySchema: {
-            user: components["schemas"]["PublicUserSchema"];
+            user: components["schemas"]["PersonSchema"];
             /** Since */
             since: string;
         };
-        /** PublicUserSchema */
-        PublicUserSchema: {
+        /**
+         * PersonSchema
+         * @description A person in a list (search, followers, following), with how the viewer relates to them.
+         */
+        PersonSchema: {
             /** Id */
             id: string;
             /** Username */
@@ -1457,6 +1487,21 @@ export interface components {
             location: string;
             /** Is Verified */
             is_verified: boolean;
+            /**
+             * Is Self
+             * @default false
+             */
+            is_self: boolean;
+            /**
+             * Following
+             * @default false
+             */
+            following: boolean;
+            /**
+             * Followed By
+             * @default false
+             */
+            followed_by: boolean;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -1597,6 +1642,22 @@ export interface components {
              */
             is_bookmarked: boolean;
             lift?: components["schemas"]["LiftSchema"] | null;
+            repost_of?: components["schemas"]["PostDetailSchema"] | null;
+            /**
+             * Repost Unavailable
+             * @default false
+             */
+            repost_unavailable: boolean;
+            /**
+             * Repost Count
+             * @default 0
+             */
+            repost_count: number;
+            /**
+             * My Reposted
+             * @default false
+             */
+            my_reposted: boolean;
         };
         /** PostMediaSchema */
         PostMediaSchema: {
@@ -1746,6 +1807,20 @@ export interface components {
              * @default false
              */
             is_testimony: boolean;
+        };
+        /** RepostCreateSchema */
+        RepostCreateSchema: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /**
+             * Visibility
+             * @default public
+             * @enum {string}
+             */
+            visibility: "public" | "followers";
         };
         /** PageCreateSchema */
         PageCreateSchema: {
@@ -2634,7 +2709,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicUserSchema"][];
+                    "application/json": components["schemas"]["PersonSchema"][];
                 };
             };
         };
@@ -3412,6 +3487,52 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CursorPage_PostDetailSchema_"];
                 };
+            };
+        };
+    };
+    apps_feed_api_repost_endpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepostCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostDetailSchema"];
+                };
+            };
+        };
+    };
+    apps_feed_api_undo_repost_endpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

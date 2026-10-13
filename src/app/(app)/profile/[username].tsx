@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +10,9 @@ import { errorMessage, unwrap } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
 import type { Post } from '@/features/feed/api';
 import { PostCard, PostCardSkeleton } from '@/features/feed/PostCard';
+import { FollowButton } from '@/features/people/follow';
 import { pickAndUploadProfilePhoto } from '@/features/profile/photos';
+import { routes } from '@/lib/routes';
 import { remoteImage } from '@/lib/media';
 import { displayName } from '@/lib/time';
 import { AppText, Avatar, Button, Card, PressableScale } from '@/ui/components';
@@ -47,17 +49,6 @@ export default function Profile() {
 
   const p = profile.data;
   const isSelf = p?.relationship.is_self ?? me?.username === username;
-  const following = p?.relationship.following ?? false;
-
-  const follow = useMutation({
-    mutationFn: async () => {
-      const path = { params: { path: { username } } };
-      if (following) unwrap(await api.DELETE('/api/v1/users/{username}/follow/', path));
-      else unwrap(await api.POST('/api/v1/users/{username}/follow/', path));
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['profile', username] }),
-    onError: (err) => Alert.alert("Couldn't update", errorMessage(err)),
-  });
 
   async function changePhoto(kind: 'avatar' | 'cover') {
     setUploading(kind);
@@ -147,18 +138,17 @@ export default function Profile() {
               {p.website ? <Meta label="Website" value={p.website} /> : null}
             </View>
             <View style={styles.stats}>
-              <Stat value={p.follower_count} label={p.follower_count === 1 ? 'Follower' : 'Followers'} />
-              <Stat value={p.following_count} label="Following" />
+              <Stat
+                value={p.follower_count}
+                label={p.follower_count === 1 ? 'Follower' : 'Followers'}
+                onPress={() => router.push(routes.people(p.username, 'followers'))}
+              />
+              <Stat value={p.following_count} label="Following" onPress={() => router.push(routes.people(p.username, 'following'))} />
             </View>
             {isSelf ? (
               <Button title="Edit profile" variant="outline" onPress={() => router.push('/profile/edit')} />
             ) : (
-              <Button
-                title={following ? 'Following' : p.relationship.followed_by ? 'Follow back' : 'Follow'}
-                variant={following ? 'outline' : 'primary'}
-                loading={follow.isPending}
-                onPress={() => follow.mutate()}
-              />
+              <FollowButton username={p.username} following={p.relationship.following} followedBy={p.relationship.followed_by} />
             )}
           </Animated.View>
         ) : profile.isError ? (
@@ -228,11 +218,13 @@ function Meta({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, onPress }: { value: number; label: string; onPress: () => void }) {
   return (
-    <AppText variant="caption" color={colors.textMuted}>
-      <AppText variant="bodyBold">{value}</AppText> {label}
-    </AppText>
+    <Pressable onPress={onPress} hitSlop={8} accessibilityRole="link" accessibilityLabel={`${value} ${label}`}>
+      <AppText variant="caption" color={colors.textMuted}>
+        <AppText variant="bodyBold">{value}</AppText> {label}
+      </AppText>
+    </Pressable>
   );
 }
 

@@ -23,16 +23,75 @@ import {
   useMuteOrBlock,
   useSetAudience,
   useToggleLike,
+  useToggleRepost,
   useToggleSave,
 } from './api';
+import { EmbeddedPost } from './EmbeddedPost';
 import { LiftPanel } from './LiftPanel';
 
-type Sheet = 'menu' | 'audience' | 'report' | null;
+type Sheet = 'menu' | 'audience' | 'report' | 'share' | null;
 
 const COLLAPSED_LINES = 6;
 
-/** Post card from the design: author row, text with "read more", rounded image, action row. */
+/**
+ * A post in a feed. A plain repost shows the original post with a "reposted" line above it;
+ * everything else is a normal card (a quote repost embeds the original inside).
+ */
 export const PostCard = memo(function PostCard({
+  post,
+  onHide,
+  inDetail = false,
+}: {
+  post: Post;
+  onHide?: (id: string) => void;
+  inDetail?: boolean;
+}) {
+  const isPlainRepost = post.post_type === 'repost' && !post.content.trim();
+  if (!isPlainRepost) return <PostCardBody post={post} onHide={onHide} inDetail={inDetail} />;
+  return (
+    <View style={{ gap: 6 }}>
+      <RepostLine post={post} />
+      {post.repost_of ? (
+        <PostCardBody post={post.repost_of} onHide={onHide ? () => onHide(post.id) : undefined} inDetail={inDetail} />
+      ) : (
+        <EmbeddedPost post={null} />
+      )}
+    </View>
+  );
+});
+
+function RepostLine({ post }: { post: Post }) {
+  const { user } = useAuth();
+  const mine = user?.id === post.author.id;
+  const undo = useToggleRepost();
+  return (
+    <View style={styles.repostLine}>
+      <AppText variant="caption" color={colors.textMuted}>
+        🔁{' '}
+      </AppText>
+      <AppText variant="caption" color={colors.textMuted} style={{ flexShrink: 1 }} numberOfLines={1}>
+        {mine ? (
+          'You reposted'
+        ) : (
+          <>
+            <AppText variant="caption" color={colors.primary} onPress={() => router.push(routes.profile(post.author.username))}>
+              {displayName(post.author)}
+            </AppText>{' '}
+            reposted
+          </>
+        )}
+      </AppText>
+      {mine && post.repost_of ? (
+        <AppText variant="caption" color={colors.link} onPress={() => undo.mutate(post.repost_of as Post)} style={{ marginLeft: 'auto' }}>
+          Undo
+        </AppText>
+      ) : null}
+    </View>
+  );
+}
+
+/** Post card from the design: author row, text with "read more", rounded image, action row. */
+const PostCardBody = memo(function PostCardBody({
   post,
   onHide,
   inDetail = false,
@@ -47,6 +106,7 @@ export const PostCard = memo(function PostCard({
   const del = useDeletePost();
   const audience = useSetAudience();
   const moderate = useMuteOrBlock();
+  const repost = useToggleRepost();
   const [expanded, setExpanded] = useState(inDetail);
   const [canExpand, setCanExpand] = useState(false);
   const [sheet, setSheet] = useState<Sheet>(null);
@@ -116,6 +176,23 @@ export const PostCard = memo(function PostCard({
     onPress: () => audience.mutate({ post, visibility: o.value }, { onError: fail }),
   }));
 
+  const canRepost = post.visibility === 'public' || post.visibility === 'group' || post.visibility === 'page';
+  const shareOutside = () =>
+    Share.share({ message: post.content ? `${post.content.slice(0, 200)}\n\nShared from Vine` : 'Shared from Vine' });
+  const shareActions: SheetAction[] = [
+    ...(canRepost
+      ? [
+          post.my_reposted
+            ? { label: 'Undo repost', onPress: () => repost.mutate(post, { onError: fail }) }
+            : !mine
+              ? { label: 'Repost', hint: 'Share it with your followers', onPress: () => repost.mutate(post, { onError: fail }) }
+              : null,
+          { label: 'Repost with your thoughts', hint: 'Add a few words of your own', onPress: () => router.push(routes.repost(post.id)) },
+        ].filter((a): a is SheetAction => a !== null)
+      : []),
+    { label: 'Share outside Vine', hint: canRepost ? undefined : 'Only public posts can be reposted', onPress: shareOutside },
+  ];
+
   const reportActions: SheetAction[] = REPORT_REASONS.map((r) => ({
     label: r.label,
     onPress: () =>
@@ -177,6 +254,8 @@ export const PostCard = memo(function PostCard({
 
       {photos.length ? <PhotoCarousel urls={photos} onOpen={setViewing} /> : null}
 
+      {post.post_type === 'repost' ? <EmbeddedPost post={post.repost_of} /> : null}
+
       {post.lift ? <LiftPanel post={post} mine={mine} inDetail={inDetail} /> : null}
 
       <View style={styles.actions}>
@@ -190,8 +269,10 @@ export const PostCard = memo(function PostCard({
         <Action icon={icons.comment} label={`Comments (${post.comment_count})`} onPress={open} />
         <Action
           icon={icons.shared}
-          label="Share"
-          onPress={() => Share.share({ message: post.content ? `${post.content.slice(0, 200)}\n\nShared from Vine` : 'Shared from Vine' })}
+          label={post.repost_count ? `Share (${post.repost_count})` : 'Share'}
+          onPress={() => setSheet('share')}
+          active={post.my_reposted}
+          pop
         />
         <Action
           icon={post.is_bookmarked ? icons.saved : icons.savedOutline}
@@ -204,6 +285,7 @@ export const PostCard = memo(function PostCard({
 
       <ActionSheet visible={sheet === 'menu'} actions={menuActions} onClose={() => setSheet(null)} />
       <ActionSheet visible={sheet === 'audience'} title="Who can see this post?" actions={audienceActions} onClose={() => setSheet(null)} />
+      <ActionSheet visible={sheet === 'share'} title="Share this post" actions={shareActions} onClose={() => setSheet(null)} />
       <ActionSheet visible={sheet === 'report'} title="Why are you reporting this?" actions={reportActions} onClose={() => setSheet(null)} />
       <ImageViewer images={viewing === null ? null : photos} index={viewing ?? 0} onClose={() => setViewing(null)} />
     </View>
@@ -274,6 +356,7 @@ const styles = StyleSheet.create({
   author: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: { paddingHorizontal: 6, paddingVertical: 2 },
+  repostLine: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.md },
   actions: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', rowGap: space.sm },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 });

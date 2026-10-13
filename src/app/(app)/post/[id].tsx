@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { api, type Schemas } from '@/api/client';
@@ -9,6 +9,7 @@ import { errorMessage, unwrap } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
 import { PostCard } from '@/features/feed/PostCard';
 import { useKeyboardHeight } from '@/lib/keyboard';
+import { routes } from '@/lib/routes';
 import { displayName, timeAgo } from '@/lib/time';
 import { AppText, Avatar, Button, ErrorText } from '@/ui/components';
 import { colors, fonts, radius, space } from '@/ui/theme';
@@ -66,9 +67,13 @@ export default function PostDetail() {
         ListHeaderComponent={<PostCard post={post.data} inDetail />}
         renderItem={({ item }) => (
           <View style={styles.comment}>
-            <Avatar uri={item.author.profile_picture} size={34} />
+            <Pressable onPress={() => router.push(routes.profile(item.author.username))} accessibilityRole="link" accessibilityLabel={`${displayName(item.author)}'s profile`}>
+              <Avatar uri={item.author.profile_picture} size={34} />
+            </Pressable>
             <View style={styles.bubble}>
-              <AppText variant="bodyBold">{displayName(item.author)}</AppText>
+              <AppText variant="bodyBold" onPress={() => router.push(routes.profile(item.author.username))}>
+                {displayName(item.author)}
+              </AppText>
               <AppText>{item.body}</AppText>
               <AppText variant="caption" color={colors.textMuted}>
                 {timeAgo(item.created_at)}

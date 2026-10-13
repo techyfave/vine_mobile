@@ -1030,7 +1030,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/PublicUserSchema"
+                    "$ref": "#/components/schemas/PersonSchema"
                   },
                   "title": "Response",
                   "type": "array"
@@ -2539,6 +2539,85 @@
         ]
       }
     },
+    "/api/v1/feed/posts/{post_id}/repost/": {
+      "post": {
+        "operationId": "apps_feed_api_repost_endpoint",
+        "summary": "Repost Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetailSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Repost a post to your followers, optionally with your own words (a quote).\n\nReposting a repost shares the original. A plain repost happens once per post (repeating it\nreturns the existing one). Only posts everyone can already see can be reposted.",
+        "tags": [
+          "Feed"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepostCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_feed_api_undo_repost_endpoint",
+        "summary": "Undo Repost Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Undo your plain repost of this post (quote reposts are deleted like any other post).",
+        "tags": [
+          "Feed"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/pages/": {
       "post": {
         "operationId": "apps_pages_api_create_page",
@@ -3842,7 +3921,7 @@
       "FollowEntrySchema": {
         "properties": {
           "user": {
-            "$ref": "#/components/schemas/PublicUserSchema"
+            "$ref": "#/components/schemas/PersonSchema"
           },
           "since": {
             "title": "Since",
@@ -3856,7 +3935,8 @@
         "title": "FollowEntrySchema",
         "type": "object"
       },
-      "PublicUserSchema": {
+      "PersonSchema": {
+        "description": "A person in a list (search, followers, following), with how the viewer relates to them.",
         "properties": {
           "id": {
             "title": "Id",
@@ -3903,6 +3983,21 @@
           "is_verified": {
             "title": "Is Verified",
             "type": "boolean"
+          },
+          "is_self": {
+            "default": false,
+            "title": "Is Self",
+            "type": "boolean"
+          },
+          "following": {
+            "default": false,
+            "title": "Following",
+            "type": "boolean"
+          },
+          "followed_by": {
+            "default": false,
+            "title": "Followed By",
+            "type": "boolean"
           }
         },
         "required": [
@@ -3912,7 +4007,7 @@
           "last_name",
           "is_verified"
         ],
-        "title": "PublicUserSchema",
+        "title": "PersonSchema",
         "type": "object"
       },
       "ProfileSchema": {
@@ -4237,6 +4332,31 @@
                 "type": "null"
               }
             ]
+          },
+          "repost_of": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PostDetailSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repost_unavailable": {
+            "default": false,
+            "title": "Repost Unavailable",
+            "type": "boolean"
+          },
+          "repost_count": {
+            "default": 0,
+            "title": "Repost Count",
+            "type": "integer"
+          },
+          "my_reposted": {
+            "default": false,
+            "title": "My Reposted",
+            "type": "boolean"
           }
         },
         "required": [
@@ -4670,6 +4790,27 @@
           "body"
         ],
         "title": "LiftUpdateCreateSchema",
+        "type": "object"
+      },
+      "RepostCreateSchema": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Note",
+            "type": "string"
+          },
+          "visibility": {
+            "default": "public",
+            "enum": [
+              "public",
+              "followers"
+            ],
+            "title": "Visibility",
+            "type": "string"
+          }
+        },
+        "title": "RepostCreateSchema",
         "type": "object"
       },
       "PageCreateSchema": {

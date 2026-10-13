@@ -8,5 +8,8 @@ export const routes = {
   profile: (username: string) => `/profile/${encodeURIComponent(username)}` as Href,
   editPost: (id: string) => `/edit-post/${encodeURIComponent(id)}` as Href,
   liftUpdate: (id: string, testimony = false) => `/lift-update/${encodeURIComponent(id)}${testimony ? '?testimony=1' : ''}` as Href,
+  people: (username: string, tab: 'followers' | 'following') =>
+    `/people/${encodeURIComponent(username)}?tab=${tab}` as Href,
+  repost: (id: string) => `/repost/${encodeURIComponent(id)}` as Href,
   liftPeople: (id: string) => `/lift-people/${encodeURIComponent(id)}` as Href,
 };
