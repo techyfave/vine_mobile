@@ -47,7 +47,8 @@
           "backgroundColor": "#E1ECFA"
         }
       ],
-      "@sentry/react-native/expo"
+      "@sentry/react-native/expo",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true
@@ -63,7 +64,7 @@
         "web": ""
       },
       "router": {},
-      "sentryDsn": ""
+      "sentryDsn": "https://df7819f9f9ef20664739f5181176c90a@o4512248555372544.ingest.de.sentry.io/4512248779309136"
     },
     "owner": "techyfave",
     "runtimeVersion": {
