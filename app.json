@@ -46,7 +46,8 @@
           "imageWidth": 160,
           "backgroundColor": "#E1ECFA"
         }
-      ]
+      ],
+      "@sentry/react-native/expo"
     ],
     "experiments": {
       "typedRoutes": true
@@ -61,7 +62,8 @@
         "android": "",
         "web": ""
       },
-      "router": {}
+      "router": {},
+      "sentryDsn": ""
     },
     "owner": "techyfave",
     "runtimeVersion": {

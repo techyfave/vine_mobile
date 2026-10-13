@@ -9,6 +9,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
+import { Sentry } from '@/lib/sentry';
 import { AppText } from '@/ui/components';
 import { duration } from '@/ui/motion';
 import { colors, space } from '@/ui/theme';
@@ -58,7 +59,7 @@ function RootNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Nunito_500Medium,
     Nunito_700Bold,
@@ -81,3 +82,6 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+// Sentry.wrap reports render crashes; it does nothing when Sentry is off.
+export default Sentry.wrap(RootLayout);

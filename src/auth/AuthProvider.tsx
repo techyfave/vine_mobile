@@ -5,6 +5,7 @@ import { api, onSessionExpired, onUpdateRequired, type Schemas } from '@/api/cli
 import { unwrap } from '@/api/errors';
 import { clearTokens, loadTokens, saveTokens } from '@/api/tokens';
 import { deviceInfo } from '@/lib/device';
+import { identify } from '@/lib/sentry';
 import { unregisterPushDevice } from '@/lib/push';
 
 import type { SocialCredential } from './social';
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [reloadUser, reset]);
 
+  useEffect(() => identify(user?.id ?? null), [user]);
   useEffect(() => onSessionExpired(reset), [reset]);
   useEffect(() => onUpdateRequired(() => setUpdateRequired(true)), []);
 

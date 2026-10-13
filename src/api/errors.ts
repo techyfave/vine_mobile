@@ -1,3 +1,5 @@
+import { report } from '@/lib/sentry';
+
 /** Every API error body is { detail: string, code?: string }. */
 export type ApiErrorBody = { detail?: string; code?: string; errors?: unknown; min_version?: string };
 
@@ -28,6 +30,7 @@ export function errorMessage(err: unknown): string {
   if (err instanceof Error && /Network request failed|fetch failed/.test(err.message)) {
     return "Can't reach Vine. Check your connection and try again.";
   }
+  report(err); // unexpected: send to Sentry (no-op in development)
   // In development builds, show the real error so problems can be diagnosed from the phone.
   if (__DEV__) {
     console.warn('[api]', err);
