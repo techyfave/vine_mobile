@@ -3,7 +3,7 @@
   "info": {
     "title": "Vine API",
     "version": "1.0",
-    "description": "Vine \u2014 Christian social platform API"
+    "description": "Vine — Christian social platform API"
   },
   "paths": {
     "/api/v1/meta/": {
@@ -1618,7 +1618,7 @@
             }
           }
         },
-        "description": "Chronological home feed: the viewer's own posts and posts from people they follow (minus muted).",
+        "description": "Chronological home feed: the viewer's own posts, posts from people they follow, posts on Pages they\nfollow or belong to, and announcements addressed to them (minus muted people).",
         "tags": [
           "Feed"
         ],
@@ -2291,7 +2291,7 @@
             }
           }
         },
-        "description": "Public posts from people the viewer doesn't follow, newest first.\n\nDeliberately simple until ranking is designed (see roadmap \u00a78A): sorting by a\nlive reaction COUNT across all posts doesn't scale and isn't explainable.",
+        "description": "Public posts from people the viewer doesn't follow, newest first.\n\nDeliberately simple until ranking is designed (see roadmap §8A): sorting by a\nlive reaction COUNT across all posts doesn't scale and isn't explainable.",
         "tags": [
           "Feed"
         ],
@@ -2713,6 +2713,33 @@
         ]
       }
     },
+    "/api/v1/pages/types": {
+      "get": {
+        "operationId": "apps_pages_api_page_types",
+        "summary": "Page Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PageTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Types a user can pick when creating a Page, with what each one offers.",
+        "tags": [
+          "Pages"
+        ]
+      }
+    },
     "/api/v1/pages/": {
       "post": {
         "operationId": "apps_pages_api_create_page",
@@ -2720,7 +2747,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCardOut"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2785,11 +2819,46 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_PageCardOut_"
+                }
+              }
+            }
           }
         },
         "tags": [
           "Pages"
+        ]
+      }
+    },
+    "/api/v1/pages/mine": {
+      "get": {
+        "operationId": "apps_pages_api_my_pages",
+        "summary": "My Pages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyPagesOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Pages the viewer belongs to (or asked to join), helps run, and follows.",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
         ]
       }
     },
@@ -2810,7 +2879,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDetailOut"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2833,7 +2909,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDetailOut"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2844,6 +2927,122 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PagePatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/logo": {
+      "post": {
+        "operationId": "apps_pages_api_page_logo",
+        "summary": "Page Logo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDetailOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/cover": {
+      "post": {
+        "operationId": "apps_pages_api_page_cover",
+        "summary": "Page Cover",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDetailOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "FileParams",
+                "type": "object"
               }
             }
           },
@@ -2873,7 +3072,116 @@
         ],
         "responses": {
           "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Join: approved at once when the Page is open, otherwise a request (status 'pending').",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_pages_api_page_leave",
+        "summary": "Page Leave",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "OK"
+          }
+        },
+        "description": "Leave the Page, or withdraw a pending request.",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/follow": {
+      "post": {
+        "operationId": "apps_pages_api_page_follow",
+        "summary": "Page Follow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_pages_api_page_unfollow",
+        "summary": "Page Unfollow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowOut"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2916,7 +3224,7 @@
             "description": "OK"
           }
         },
-        "description": "Approve/ban members and change roles.\n\nRules (prevents privilege escalation):\n- Moderators may only change the status of plain members; they cannot change roles.\n- Admins may change status and roles, but only the Page owner may grant or remove admin.\n- Nobody can modify the Page owner or their own membership here.",
+        "description": "Approve/ban members and change their legacy role (admin/moderator). Rules: `services.moderate_member`.",
         "tags": [
           "Pages"
         ],
@@ -2930,6 +3238,45 @@
           },
           "required": true
         },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_pages_api_remove_member",
+        "summary": "Remove Member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Decline a join request or remove a member. Rules: `services.remove_member`.",
+        "tags": [
+          "Pages"
+        ],
         "security": [
           {
             "JWTAuth": []
@@ -2950,6 +3297,27 @@
               "type": "string"
             },
             "required": true
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "approved",
+                    "pending",
+                    "banned"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            },
+            "required": false
           },
           {
             "in": "query",
@@ -2974,9 +3342,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_MemberOut_"
+                }
+              }
+            }
           }
         },
+        "description": "Members are visible to the Page's members and managers only: belonging to a church is personal.",
         "tags": [
           "Pages"
         ],
@@ -3040,7 +3416,7 @@
             }
           }
         },
-        "description": "Posts published to this Page that the viewer may see (public posts, plus members-only for members).",
+        "description": "Posts published to this Page that the viewer may see (public posts, members-only posts for members),\nplus announcements its organization addressed to this Page.",
         "tags": [
           "Pages"
         ],
@@ -3176,9 +3552,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnouncementOut"
+                }
+              }
+            }
           }
         },
+        "description": "Send an announcement. Without `audience` it goes to this Page's own members (as before).",
         "tags": [
           "Pages"
         ],
@@ -3207,6 +3591,915 @@
             "name": "slug",
             "schema": {
               "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AnnouncementOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Announcements on this Page that the viewer is in the audience for (pinned first).",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/notification-preferences": {
+      "get": {
+        "operationId": "apps_pages_api_page_notification_prefs",
+        "summary": "Page Notification Prefs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPrefsOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_pages_api_page_notification_prefs_update",
+        "summary": "Page Notification Prefs Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPrefsOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPrefsSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/me": {
+      "get": {
+        "operationId": "apps_pages_api_page_me",
+        "summary": "Page Me",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageMeOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "The viewer's roles and permissions on this Page, so the app shows only the controls they may use.",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/roles": {
+      "get": {
+        "operationId": "apps_pages_api_page_roles",
+        "summary": "Page Roles",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleAssignmentOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_pages_api_page_role_grant",
+        "summary": "Page Role Grant",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleAssignmentOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleGrantSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/roles/{assignment_id}": {
+      "delete": {
+        "operationId": "apps_pages_api_page_role_revoke",
+        "summary": "Page Role Revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Assignment Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/ownership-transfer": {
+      "post": {
+        "operationId": "apps_pages_api_page_ownership_transfer",
+        "summary": "Page Ownership Transfer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnershipTransferSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/organization": {
+      "get": {
+        "operationId": "apps_pages_api_page_organization",
+        "summary": "Page Organization",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/OrganizationOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "The organization this Page belongs to: its HQ and branches. Null for a standalone Page (no hierarchy UI).",
+        "tags": [
+          "Pages"
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-links": {
+      "get": {
+        "operationId": "apps_pages_api_page_branch_links",
+        "summary": "Page Branch Links",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "default": "pending",
+              "enum": [
+                "pending",
+                "accepted",
+                "all"
+              ],
+              "title": "Status",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BranchLinkOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-invites": {
+      "post": {
+        "operationId": "apps_pages_api_page_branch_invite",
+        "summary": "Page Branch Invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchLinkOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "HQ invites an existing Page to become one of its branches; that Page's owner accepts or declines.",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchInviteSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-requests": {
+      "post": {
+        "operationId": "apps_pages_api_page_branch_request",
+        "summary": "Page Branch Request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchLinkOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "This Page's owner asks to join an HQ as a branch; the HQ approves or declines.",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchRequestSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-links/{link_id}/decide": {
+      "post": {
+        "operationId": "apps_pages_api_page_branch_link_decide",
+        "summary": "Page Branch Link Decide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "link_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Link Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchLinkOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkDecisionSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-links/{link_id}/cancel": {
+      "post": {
+        "operationId": "apps_pages_api_page_branch_link_cancel",
+        "summary": "Page Branch Link Cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "link_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Link Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchLinkOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/branch-links/{link_id}": {
+      "delete": {
+        "operationId": "apps_pages_api_page_branch_unlink",
+        "summary": "Page Branch Unlink",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "link_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Link Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchLinkOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/organization/settings": {
+      "patch": {
+        "operationId": "apps_pages_api_page_organization_settings",
+        "summary": "Page Organization Settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgSettingsSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/verification": {
+      "get": {
+        "operationId": "apps_pages_api_page_verification",
+        "summary": "Page Verification",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_pages_api_page_verification_submit",
+        "summary": "Page Verification Submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationSubmitSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/transfers": {
+      "post": {
+        "operationId": "apps_pages_api_page_transfer_request",
+        "summary": "Page Transfer Request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Ask to move your home to this Page (another branch or the HQ of your organization).",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequestSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_pages_api_page_transfers",
+        "summary": "Page Transfers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Pending moves into this Page, for people who manage its members.",
+        "tags": [
+          "Pages"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/transfers/{transfer_id}/decide": {
+      "post": {
+        "operationId": "apps_pages_api_page_transfer_decide",
+        "summary": "Page Transfer Decide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "transfer_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Transfer Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferDecisionSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/transfers/{transfer_id}/cancel": {
+      "post": {
+        "operationId": "apps_pages_api_page_transfer_cancel",
+        "summary": "Page Transfer Cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "transfer_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Transfer Id",
               "type": "string"
             },
             "required": true
@@ -3342,6 +4635,1608 @@
           {
             "JWTAuth": []
           }
+        ]
+      }
+    },
+    "/api/v1/live/": {
+      "post": {
+        "operationId": "apps_streaming_api_live_create",
+        "summary": "Live Create",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Schedule a live service on a Page. The app then fetches ingest details for the encoder.",
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_streaming_api_live_list",
+        "summary": "Live List",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page_slug",
+            "schema": {
+              "title": "Page Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "when",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "upcoming",
+                "live",
+                "past",
+                "all"
+              ],
+              "title": "When",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "A Page's services, plus its HQ's (a branch shows the HQ's services too).",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}": {
+      "get": {
+        "operationId": "apps_streaming_api_live_detail",
+        "summary": "Live Detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_streaming_api_live_update",
+        "summary": "Live Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LivePatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/ingest": {
+      "get": {
+        "operationId": "apps_streaming_api_live_ingest",
+        "summary": "Live Ingest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "RTMPS URL and stream key for the encoder. Managers only; every view is audited.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/end": {
+      "post": {
+        "operationId": "apps_streaming_api_live_end",
+        "summary": "Live End",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/chat": {
+      "get": {
+        "operationId": "apps_streaming_api_live_chat_history",
+        "summary": "Live Chat History",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_streaming_api_live_chat_send",
+        "summary": "Live Chat Send",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "REST fallback for clients without a WebSocket; the message is broadcast the same way.",
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatSendSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/chat/{message_id}/remove": {
+      "post": {
+        "operationId": "apps_streaming_api_live_chat_remove",
+        "summary": "Live Chat Remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "message_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Message Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/restrictions": {
+      "post": {
+        "operationId": "apps_streaming_api_live_restrict",
+        "summary": "Live Restrict",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Mute someone in chat on this Page for a while (moderators: volunteers and Page leadership).",
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestrictSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/react": {
+      "post": {
+        "operationId": "apps_streaming_api_live_react",
+        "summary": "Live React",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReactSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/prayer": {
+      "post": {
+        "operationId": "apps_streaming_api_live_prayer_create",
+        "summary": "Live Prayer Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrayerCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_streaming_api_live_prayer_list",
+        "summary": "Live Prayer List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "The care team sees every request; everyone else sees requests shared with the room, and their own.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/prayer/{prayer_id}": {
+      "patch": {
+        "operationId": "apps_streaming_api_live_prayer_update",
+        "summary": "Live Prayer Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "prayer_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Prayer Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrayerPatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/notes": {
+      "post": {
+        "operationId": "apps_streaming_api_live_note_create",
+        "summary": "Live Note Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_streaming_api_live_note_list",
+        "summary": "Live Note List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/responses": {
+      "post": {
+        "operationId": "apps_streaming_api_live_response_create",
+        "summary": "Live Response Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "apps_streaming_api_live_response_list",
+        "summary": "Live Response List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "new",
+                    "contacted",
+                    "closed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/live/{room_id}/responses/{response_id}": {
+      "patch": {
+        "operationId": "apps_streaming_api_live_response_update",
+        "summary": "Live Response Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "response_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Response Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Live"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsePatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/realtime/ticket": {
+      "post": {
+        "operationId": "apps_streaming_api_realtime_ticket",
+        "summary": "Realtime Ticket",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "A single-use ticket (30 s) for opening a WebSocket: wss://<realtime host>/ws/live/<room id>/?ticket=...",
+        "tags": [
+          "Realtime"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/webhooks/cloudflare/live": {
+      "post": {
+        "operationId": "apps_streaming_api_cloudflare_live_webhook",
+        "summary": "Cloudflare Live Webhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Cloudflare Notifications \"Stream Live Input\" events: live_input.connected / live_input.disconnected.",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/cloudflare/stream": {
+      "post": {
+        "operationId": "apps_streaming_api_cloudflare_stream_webhook",
+        "summary": "Cloudflare Stream Webhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Cloudflare Stream video webhooks (signed): a recording finished processing -> the replay.",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/giving/options": {
+      "get": {
+        "operationId": "apps_giving_api_giving_options",
+        "summary": "Giving Options",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page_slug",
+            "schema": {
+              "title": "Page Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Who the viewer can give to from this Page: their home branch first, one tap to the HQ or another branch.",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/gifts": {
+      "post": {
+        "operationId": "apps_giving_api_gift_create",
+        "summary": "Gift Create",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Start a gift. Returns what the app's payment sheet needs; the gift completes when the provider confirms it.",
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiftCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/me/gifts": {
+      "get": {
+        "operationId": "apps_giving_api_my_gifts",
+        "summary": "My Gifts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/me/recurring": {
+      "get": {
+        "operationId": "apps_giving_api_my_recurring",
+        "summary": "My Recurring",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/me/recurring/{plan_id}/cancel": {
+      "post": {
+        "operationId": "apps_giving_api_my_recurring_cancel",
+        "summary": "My Recurring Cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/me/statements": {
+      "get": {
+        "operationId": "apps_giving_api_my_statements",
+        "summary": "My Statements",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "schema": {
+              "title": "Year",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Year-end giving statements, one per church entity given to (for tax purposes).",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/wallet": {
+      "get": {
+        "operationId": "apps_giving_api_wallet_status",
+        "summary": "Wallet Status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_giving_api_wallet_open",
+        "summary": "Wallet Open",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_giving_api_wallet_update",
+        "summary": "Wallet Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/payout-account/onboarding-link": {
+      "post": {
+        "operationId": "apps_giving_api_payout_onboarding",
+        "summary": "Payout Onboarding",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "A link to the provider's onboarding (identity, bank account). Creates the payout account the first time.",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/payout-account": {
+      "patch": {
+        "operationId": "apps_giving_api_payout_receipt_identity",
+        "summary": "Payout Receipt Identity",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiptIdentitySchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/payout-account/share-request": {
+      "post": {
+        "operationId": "apps_giving_api_payout_share_request",
+        "summary": "Payout Share Request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "A branch asks to receive gifts through its HQ's payout account (same legal entity).",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/payout-shares": {
+      "get": {
+        "operationId": "apps_giving_api_payout_shares",
+        "summary": "Payout Shares",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/payout-shares/{share_id}/decide": {
+      "post": {
+        "operationId": "apps_giving_api_payout_share_decide",
+        "summary": "Payout Share Decide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "share_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Share Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareDecisionSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/funds": {
+      "get": {
+        "operationId": "apps_giving_api_funds_list",
+        "summary": "Funds List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_giving_api_fund_create",
+        "summary": "Fund Create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FundCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/funds/{fund_id}": {
+      "patch": {
+        "operationId": "apps_giving_api_fund_update",
+        "summary": "Fund Update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "fund_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Fund Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FundPatchSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/totals": {
+      "get": {
+        "operationId": "apps_giving_api_giving_totals",
+        "summary": "Giving Totals",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "format": "date",
+              "title": "Start",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "format": "date",
+              "title": "End",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "schema": {
+              "default": "fund",
+              "enum": [
+                "fund",
+                "branch"
+              ],
+              "title": "Group By",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Totals by fund, or by branch for an HQ. Never individual gifts; tiny buckets are hidden.",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/gifts": {
+      "get": {
+        "operationId": "apps_giving_api_donor_gift_list",
+        "summary": "Donor Gift List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Individual gifts: this Page's finance admins only. Every view is audited.",
+        "tags": [
+          "Giving"
+        ],
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/giving/pages/{slug}/gifts/{gift_id}/refund": {
+      "post": {
+        "operationId": "apps_giving_api_gift_refund",
+        "summary": "Gift Refund",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "gift_id",
+            "schema": {
+              "format": "uuid",
+              "title": "Gift Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Giving"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/webhooks/payments/stripe": {
+      "post": {
+        "operationId": "apps_giving_api_stripe_webhook",
+        "summary": "Stripe Webhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Stripe Connect events (connected accounts). Verified by signature; each event is applied once.",
+        "tags": [
+          "Webhooks"
         ]
       }
     }
@@ -4360,6 +7255,21 @@
           "author": {
             "$ref": "#/components/schemas/PostAuthorSchema"
           },
+          "page": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PostPageSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
           "content": {
             "title": "Content",
             "type": "string"
@@ -4513,6 +7423,41 @@
           "order"
         ],
         "title": "PostMediaSchema",
+        "type": "object"
+      },
+      "PostPageSchema": {
+        "description": "The Page a post was published to (shown as the post's source instead of the person who typed it).",
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          },
+          "is_verified": {
+            "default": false,
+            "title": "Is Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name"
+        ],
+        "title": "PostPageSchema",
         "type": "object"
       },
       "CursorPage_PostDetailSchema_": {
@@ -4932,6 +7877,94 @@
         "title": "SendPostSchema",
         "type": "object"
       },
+      "PageTypeOut": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "profile_fields": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Profile Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "slug",
+          "label",
+          "capabilities"
+        ],
+        "title": "PageTypeOut",
+        "type": "object"
+      },
+      "PageCardOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_type": {
+            "title": "Page Type",
+            "type": "string"
+          },
+          "member_count": {
+            "title": "Member Count",
+            "type": "integer"
+          },
+          "follower_count": {
+            "default": 0,
+            "title": "Follower Count",
+            "type": "integer"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          },
+          "is_verified": {
+            "default": false,
+            "title": "Is Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "page_type",
+          "member_count"
+        ],
+        "title": "PageCardOut",
+        "type": "object"
+      },
       "PageCreateSchema": {
         "properties": {
           "name": {
@@ -4947,8 +7980,7 @@
               "ministry",
               "fellowship",
               "organization",
-              "creator",
-              "business"
+              "creator"
             ],
             "title": "Page Type",
             "type": "string"
@@ -4996,7 +8028,217 @@
         "title": "PageCreateSchema",
         "type": "object"
       },
+      "PaginatedResponse_PageCardOut_": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/PageCardOut"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "next",
+          "previous",
+          "results"
+        ],
+        "title": "PaginatedResponse[PageCardOut]",
+        "type": "object"
+      },
+      "MyMembershipOut": {
+        "properties": {
+          "page": {
+            "$ref": "#/components/schemas/PageCardOut"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "is_home": {
+            "title": "Is Home",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "page",
+          "status",
+          "is_home"
+        ],
+        "title": "MyMembershipOut",
+        "type": "object"
+      },
+      "MyPagesOut": {
+        "properties": {
+          "memberships": {
+            "items": {
+              "$ref": "#/components/schemas/MyMembershipOut"
+            },
+            "title": "Memberships",
+            "type": "array"
+          },
+          "managing": {
+            "items": {
+              "$ref": "#/components/schemas/PageCardOut"
+            },
+            "title": "Managing",
+            "type": "array"
+          },
+          "following": {
+            "items": {
+              "$ref": "#/components/schemas/PageCardOut"
+            },
+            "title": "Following",
+            "type": "array"
+          }
+        },
+        "required": [
+          "memberships",
+          "managing",
+          "following"
+        ],
+        "title": "MyPagesOut",
+        "type": "object"
+      },
+      "PageDetailOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_type": {
+            "title": "Page Type",
+            "type": "string"
+          },
+          "member_count": {
+            "title": "Member Count",
+            "type": "integer"
+          },
+          "follower_count": {
+            "default": 0,
+            "title": "Follower Count",
+            "type": "integer"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          },
+          "is_verified": {
+            "default": false,
+            "title": "Is Verified",
+            "type": "boolean"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "website": {
+            "title": "Website",
+            "type": "string"
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string"
+          },
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "denomination": {
+            "title": "Denomination",
+            "type": "string"
+          },
+          "cover_photo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Photo"
+          },
+          "join_policy": {
+            "title": "Join Policy",
+            "type": "string"
+          },
+          "hq": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageCardOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "page_type",
+          "member_count",
+          "description",
+          "location",
+          "website",
+          "phone",
+          "address",
+          "denomination",
+          "join_policy"
+        ],
+        "title": "PageDetailOut",
+        "type": "object"
+      },
       "PagePatchSchema": {
+        "description": "Page type is not editable: it is locked at creation (platform staff change it in Django admin).\nClients that still send `page_type` have it ignored, not rejected.",
         "properties": {
           "description": {
             "anyOf": [
@@ -5009,25 +8251,6 @@
               }
             ],
             "title": "Description"
-          },
-          "page_type": {
-            "anyOf": [
-              {
-                "enum": [
-                  "church",
-                  "ministry",
-                  "fellowship",
-                  "organization",
-                  "creator",
-                  "business"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Page Type"
           },
           "denomination": {
             "anyOf": [
@@ -5088,9 +8311,65 @@
               }
             ],
             "title": "Address"
+          },
+          "join_policy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "open",
+                  "approval"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Join Policy"
           }
         },
         "title": "PagePatchSchema",
+        "type": "object"
+      },
+      "JoinOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail",
+          "created",
+          "status"
+        ],
+        "title": "JoinOut",
+        "type": "object"
+      },
+      "FollowOut": {
+        "properties": {
+          "following": {
+            "title": "Following",
+            "type": "boolean"
+          },
+          "follower_count": {
+            "title": "Follower Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "following",
+          "follower_count"
+        ],
+        "title": "FollowOut",
         "type": "object"
       },
       "MemberPatchSchema": {
@@ -5125,6 +8404,95 @@
           "status"
         ],
         "title": "MemberPatchSchema",
+        "type": "object"
+      },
+      "MemberOut": {
+        "properties": {
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "username",
+          "name",
+          "status",
+          "role"
+        ],
+        "title": "MemberOut",
+        "type": "object"
+      },
+      "PaginatedResponse_MemberOut_": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/MemberOut"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "next",
+          "previous",
+          "results"
+        ],
+        "title": "PaginatedResponse[MemberOut]",
         "type": "object"
       },
       "EventCreateSchema": {
@@ -5183,6 +8551,81 @@
         "title": "EventCreateSchema",
         "type": "object"
       },
+      "AnnouncementOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "pinned": {
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "from_page": {
+            "$ref": "#/components/schemas/PageCardOut"
+          },
+          "audience": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AudienceRowOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "pinned",
+          "created_at",
+          "from_page"
+        ],
+        "title": "AnnouncementOut",
+        "type": "object"
+      },
+      "AudienceRowOut": {
+        "properties": {
+          "page_id": {
+            "title": "Page Id",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "title": "AudienceRowOut",
+        "type": "object"
+      },
       "AnnounceCreateSchema": {
         "properties": {
           "title": {
@@ -5201,6 +8644,13 @@
             "default": false,
             "title": "Is Pinned",
             "type": "boolean"
+          },
+          "audience": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AudienceSchema"
+              }
+            ]
           }
         },
         "required": [
@@ -5208,6 +8658,461 @@
           "body"
         ],
         "title": "AnnounceCreateSchema",
+        "type": "object"
+      },
+      "AudienceSchema": {
+        "description": "Who an announcement is for. Branches can use own_page and role (on themselves); HQs can use any kind.",
+        "properties": {
+          "kind": {
+            "default": "own_page",
+            "enum": [
+              "own_page",
+              "organization",
+              "all_branches",
+              "branches",
+              "role"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_ids": {
+            "description": "For kind=branches",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Page Ids",
+            "type": "array"
+          },
+          "page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For kind=role: the Page whose role-holders are addressed",
+            "title": "Page Id"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "care_team",
+                  "finance_admin",
+                  "moderator",
+                  "org_admin",
+                  "owner",
+                  "page_admin",
+                  "volunteer"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For kind=role",
+            "title": "Role"
+          }
+        },
+        "title": "AudienceSchema",
+        "type": "object"
+      },
+      "NotificationPrefsOut": {
+        "properties": {
+          "announcements": {
+            "title": "Announcements",
+            "type": "boolean"
+          },
+          "live_alerts": {
+            "title": "Live Alerts",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "announcements",
+          "live_alerts"
+        ],
+        "title": "NotificationPrefsOut",
+        "type": "object"
+      },
+      "NotificationPrefsSchema": {
+        "properties": {
+          "announcements": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Announcements"
+          },
+          "live_alerts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Alerts"
+          }
+        },
+        "title": "NotificationPrefsSchema",
+        "type": "object"
+      },
+      "PageMeOut": {
+        "description": "The viewer's relationship to a Page, so the app shows only what they may do.",
+        "properties": {
+          "membership": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Membership"
+          },
+          "is_home": {
+            "default": false,
+            "title": "Is Home",
+            "type": "boolean"
+          },
+          "following": {
+            "default": false,
+            "title": "Following",
+            "type": "boolean"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Capabilities",
+            "type": "array"
+          }
+        },
+        "required": [
+          "roles",
+          "permissions",
+          "capabilities"
+        ],
+        "title": "PageMeOut",
+        "type": "object"
+      },
+      "RoleAssignmentOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "granted_at": {
+            "title": "Granted At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "username",
+          "role",
+          "granted_at"
+        ],
+        "title": "RoleAssignmentOut",
+        "type": "object"
+      },
+      "RoleGrantSchema": {
+        "properties": {
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "care_team",
+              "finance_admin",
+              "moderator",
+              "org_admin",
+              "owner",
+              "page_admin",
+              "volunteer"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "role"
+        ],
+        "title": "RoleGrantSchema",
+        "type": "object"
+      },
+      "OwnershipTransferSchema": {
+        "properties": {
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "OwnershipTransferSchema",
+        "type": "object"
+      },
+      "OrganizationOut": {
+        "properties": {
+          "hq": {
+            "$ref": "#/components/schemas/PageCardOut"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/PageCardOut"
+            },
+            "title": "Branches",
+            "type": "array"
+          },
+          "is_hq": {
+            "title": "Is Hq",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hq",
+          "branches",
+          "is_hq"
+        ],
+        "title": "OrganizationOut",
+        "type": "object"
+      },
+      "BranchLinkOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "hq": {
+            "$ref": "#/components/schemas/PageCardOut"
+          },
+          "branch": {
+            "$ref": "#/components/schemas/PageCardOut"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "hq",
+          "branch",
+          "direction",
+          "status",
+          "message",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "BranchLinkOut",
+        "type": "object"
+      },
+      "BranchInviteSchema": {
+        "properties": {
+          "branch_slug": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Branch Slug",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch_slug"
+        ],
+        "title": "BranchInviteSchema",
+        "type": "object"
+      },
+      "BranchRequestSchema": {
+        "properties": {
+          "hq_slug": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Hq Slug",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hq_slug"
+        ],
+        "title": "BranchRequestSchema",
+        "type": "object"
+      },
+      "LinkDecisionSchema": {
+        "properties": {
+          "accept": {
+            "title": "Accept",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accept"
+        ],
+        "title": "LinkDecisionSchema",
+        "type": "object"
+      },
+      "OrgSettingsSchema": {
+        "properties": {
+          "hq_can_view_branch_members": {
+            "title": "Hq Can View Branch Members",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hq_can_view_branch_members"
+        ],
+        "title": "OrgSettingsSchema",
+        "type": "object"
+      },
+      "VerificationSubmitSchema": {
+        "properties": {
+          "legal_name": {
+            "maxLength": 255,
+            "minLength": 2,
+            "title": "Legal Name",
+            "type": "string"
+          },
+          "registration_number": {
+            "default": "",
+            "maxLength": 64,
+            "title": "Registration Number",
+            "type": "string"
+          },
+          "country": {
+            "default": "",
+            "pattern": "^([A-Z]{2})?$",
+            "title": "Country",
+            "type": "string"
+          },
+          "website": {
+            "default": "",
+            "maxLength": 200,
+            "pattern": "^(https://\\S+)?$",
+            "title": "Website",
+            "type": "string"
+          },
+          "contact_email": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Contact Email",
+            "type": "string"
+          },
+          "contact_phone": {
+            "default": "",
+            "maxLength": 50,
+            "title": "Contact Phone",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "legal_name",
+          "contact_email"
+        ],
+        "title": "VerificationSubmitSchema",
+        "type": "object"
+      },
+      "TransferRequestSchema": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "TransferRequestSchema",
+        "type": "object"
+      },
+      "TransferDecisionSchema": {
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "approve"
+        ],
+        "title": "TransferDecisionSchema",
         "type": "object"
       },
       "CursorPage_NotificationSchema_": {
@@ -5319,6 +9224,30 @@
             ],
             "title": "Post Id"
           },
+          "page_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the notification is about a Page (open that Page)",
+            "title": "Page Slug"
+          },
+          "live_room_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set for go-live alerts (open the live service)",
+            "title": "Live Room Id"
+          },
           "viewer_follows_actor": {
             "default": false,
             "description": "Drives the \"Follow back\" button",
@@ -5369,6 +9298,682 @@
           }
         },
         "title": "MarkReadSchema",
+        "type": "object"
+      },
+      "LiveCreateSchema": {
+        "properties": {
+          "page_slug": {
+            "maxLength": 200,
+            "title": "Page Slug",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "widgets": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "chat",
+                    "reactions",
+                    "prayer",
+                    "sermon_notes",
+                    "visitor_form",
+                    "give"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Defaults to every widget the Page type offers",
+            "title": "Widgets"
+          },
+          "slow_mode_seconds": {
+            "default": 0,
+            "maximum": 300,
+            "minimum": 0,
+            "title": "Slow Mode Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_slug",
+          "title"
+        ],
+        "title": "LiveCreateSchema",
+        "type": "object"
+      },
+      "LivePatchSchema": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "widgets": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "chat",
+                    "reactions",
+                    "prayer",
+                    "sermon_notes",
+                    "visitor_form",
+                    "give"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widgets"
+          },
+          "slow_mode_seconds": {
+            "anyOf": [
+              {
+                "maximum": 300,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slow Mode Seconds"
+          }
+        },
+        "title": "LivePatchSchema",
+        "type": "object"
+      },
+      "ChatSendSchema": {
+        "properties": {
+          "body": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "ChatSendSchema",
+        "type": "object"
+      },
+      "RestrictSchema": {
+        "properties": {
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "minutes": {
+            "default": 60,
+            "maximum": 10080,
+            "minimum": 1,
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "reason": {
+            "default": "",
+            "maxLength": 255,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "RestrictSchema",
+        "type": "object"
+      },
+      "ReactSchema": {
+        "properties": {
+          "kind": {
+            "maxLength": 16,
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "ReactSchema",
+        "type": "object"
+      },
+      "PrayerCreateSchema": {
+        "properties": {
+          "body": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "share_with": {
+            "default": "care_team",
+            "enum": [
+              "care_team",
+              "room"
+            ],
+            "title": "Share With",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "PrayerCreateSchema",
+        "type": "object"
+      },
+      "PrayerPatchSchema": {
+        "properties": {
+          "status": {
+            "enum": [
+              "prayed",
+              "removed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "PrayerPatchSchema",
+        "type": "object"
+      },
+      "NoteCreateSchema": {
+        "properties": {
+          "title": {
+            "default": "",
+            "maxLength": 255,
+            "title": "Title",
+            "type": "string"
+          },
+          "body": {
+            "default": "",
+            "maxLength": 10000,
+            "title": "Body",
+            "type": "string"
+          },
+          "scripture_refs": {
+            "items": {
+              "$ref": "#/components/schemas/ScriptureRefSchema"
+            },
+            "maxItems": 20,
+            "title": "Scripture Refs",
+            "type": "array"
+          }
+        },
+        "title": "NoteCreateSchema",
+        "type": "object"
+      },
+      "ScriptureRefSchema": {
+        "properties": {
+          "ref": {
+            "description": "e.g. \"John 3:16-18\"",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Ref",
+            "type": "string"
+          },
+          "translation": {
+            "default": "",
+            "maxLength": 16,
+            "pattern": "^[A-Za-z0-9-]*$",
+            "title": "Translation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "title": "ScriptureRefSchema",
+        "type": "object"
+      },
+      "ResponseCreateSchema": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "first_time",
+              "prayer",
+              "decision",
+              "connect"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "email": {
+            "default": "",
+            "maxLength": 254,
+            "pattern": "^([^@\\s]+@[^@\\s]+\\.[^@\\s]+)?$",
+            "title": "Email",
+            "type": "string"
+          },
+          "phone": {
+            "default": "",
+            "maxLength": 50,
+            "title": "Phone",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Message",
+            "type": "string"
+          },
+          "consent": {
+            "description": "Agreed to be contacted by this church",
+            "title": "Consent",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "consent"
+        ],
+        "title": "ResponseCreateSchema",
+        "type": "object"
+      },
+      "ResponsePatchSchema": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "new",
+                  "contacted",
+                  "closed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "assigned_to": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To"
+          }
+        },
+        "title": "ResponsePatchSchema",
+        "type": "object"
+      },
+      "GiftCreateSchema": {
+        "properties": {
+          "wallet_id": {
+            "format": "uuid",
+            "title": "Wallet Id",
+            "type": "string"
+          },
+          "fund_id": {
+            "format": "uuid",
+            "title": "Fund Id",
+            "type": "string"
+          },
+          "amount_minor": {
+            "description": "In the currency minor unit (cents for USD, yen for JPY)",
+            "exclusiveMinimum": 0,
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "recurring": {
+            "anyOf": [
+              {
+                "enum": [
+                  "weekly",
+                  "biweekly",
+                  "monthly"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurring"
+          },
+          "live_room_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when giving from a live service",
+            "title": "Live Room Id"
+          },
+          "idempotency_key": {
+            "description": "New per gift; reuse it to retry",
+            "maxLength": 64,
+            "minLength": 8,
+            "title": "Idempotency Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "wallet_id",
+          "fund_id",
+          "amount_minor",
+          "idempotency_key"
+        ],
+        "title": "GiftCreateSchema",
+        "type": "object"
+      },
+      "WalletCreateSchema": {
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "maxLength": 3,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          }
+        },
+        "title": "WalletCreateSchema",
+        "type": "object"
+      },
+      "WalletPatchSchema": {
+        "properties": {
+          "is_enabled": {
+            "title": "Is Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_enabled"
+        ],
+        "title": "WalletPatchSchema",
+        "type": "object"
+      },
+      "ReceiptIdentitySchema": {
+        "properties": {
+          "legal_name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Name"
+          },
+          "tax_id_display": {
+            "anyOf": [
+              {
+                "maxLength": 8,
+                "pattern": "^[0-9A-Za-z]{0,8}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Id Display"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "receipt_signatory": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Receipt Signatory"
+          },
+          "tax_statement": {
+            "anyOf": [
+              {
+                "enum": [
+                  "none",
+                  "us_no_goods"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Statement"
+          }
+        },
+        "title": "ReceiptIdentitySchema",
+        "type": "object"
+      },
+      "ShareDecisionSchema": {
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "approve"
+        ],
+        "title": "ShareDecisionSchema",
+        "type": "object"
+      },
+      "FundCreateSchema": {
+        "properties": {
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "kind": {
+            "default": "custom",
+            "enum": [
+              "tithe",
+              "offering",
+              "building",
+              "missions",
+              "custom"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FundCreateSchema",
+        "type": "object"
+      },
+      "FundPatchSchema": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "maximum": 1000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order"
+          }
+        },
+        "title": "FundPatchSchema",
+        "type": "object"
+      },
+      "RefundSchema": {
+        "properties": {
+          "amount_minor": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit to refund what is left",
+            "title": "Amount Minor"
+          }
+        },
+        "title": "RefundSchema",
         "type": "object"
       }
     },

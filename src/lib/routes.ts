@@ -13,4 +13,11 @@ export const routes = {
   sendPost: (id: string) => `/send-post/${encodeURIComponent(id)}` as Href,
   repost: (id: string) => `/repost/${encodeURIComponent(id)}` as Href,
   liftPeople: (id: string) => `/lift-people/${encodeURIComponent(id)}` as Href,
+  page: (slug: string) => `/page/${encodeURIComponent(slug)}` as Href,
+  pageAnnounce: (slug: string) => `/page/${encodeURIComponent(slug)}/announce` as Href,
+  pageBranches: (slug: string) => `/page/${encodeURIComponent(slug)}/branches` as Href,
+  pageMembers: (slug: string) => `/page/${encodeURIComponent(slug)}/members` as Href,
+  pageEdit: (slug: string) => `/page/${encodeURIComponent(slug)}/edit` as Href,
+  pages: '/pages' as Href,
+  newPage: '/pages/new' as Href,
 };

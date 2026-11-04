@@ -68,6 +68,13 @@ export default function AppLayout() {
         <Stack.Screen name="lift-people/[id]" options={{ title: 'Prayer & support' }} />
         <Stack.Screen name="saved" options={{ title: 'Saved' }} />
         <Stack.Screen name="search" options={{ title: 'Search' }} />
+        <Stack.Screen name="pages/index" options={{ title: 'Pages' }} />
+        <Stack.Screen name="pages/new" options={{ title: 'Create a Page', presentation: 'modal' }} />
+        <Stack.Screen name="page/[slug]/index" options={{ title: 'Page' }} />
+        <Stack.Screen name="page/[slug]/announce" options={{ title: 'Announcement', presentation: 'modal' }} />
+        <Stack.Screen name="page/[slug]/branches" options={{ title: 'Branches' }} />
+        <Stack.Screen name="page/[slug]/members" options={{ title: 'Members' }} />
+        <Stack.Screen name="page/[slug]/edit" options={{ title: 'Edit Page', presentation: 'modal' }} />
       </Stack>
     </OnboardingContext.Provider>
   );

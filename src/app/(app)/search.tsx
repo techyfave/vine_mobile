@@ -1,17 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { api } from '@/api/client';
 import { unwrap } from '@/api/errors';
+import { usePageSearch } from '@/features/pages/api';
+import { PageRow, Tabs } from '@/features/pages/components';
 import { PersonRow } from '@/features/people/PersonRow';
 import { AppText, Input } from '@/ui/components';
 import { enter, staggerDelay } from '@/ui/motion';
 import { colors, space } from '@/ui/theme';
 
-/** Find people by name or username; tap someone to open their profile. */
+type Kind = 'people' | 'pages';
+
+/** Find people or Pages (churches, ministries...) by name. */
 export default function Search() {
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const [kind, setKind] = useState<Kind>(params.tab === 'pages' ? 'pages' : 'people');
   const [q, setQ] = useState('');
   const [debounced, setDebounced] = useState('');
   useEffect(() => {
@@ -21,13 +28,50 @@ export default function Search() {
 
   const results = useQuery({
     queryKey: ['search', debounced],
-    enabled: debounced.length >= 2,
+    enabled: kind === 'people' && debounced.length >= 2,
     queryFn: async () => unwrap(await api.GET('/api/v1/users/search/', { params: { query: { q: debounced } } })),
   });
+  const pages = usePageSearch(kind === 'pages' ? debounced : '');
 
   return (
     <View style={{ flex: 1, padding: space.md, gap: space.md }}>
-      <Input placeholder="Search people" value={q} onChangeText={setQ} autoFocus autoCapitalize="none" autoCorrect={false} returnKeyType="search" />
+      <Input
+        placeholder={kind === 'pages' ? 'Search churches and Pages' : 'Search people'}
+        value={q}
+        onChangeText={setQ}
+        autoFocus
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="search"
+      />
+      <Tabs
+        tabs={[
+          { key: 'people' as Kind, label: 'People' },
+          { key: 'pages' as Kind, label: 'Pages' },
+        ]}
+        value={kind}
+        onChange={setKind}
+      />
+      {kind === 'pages' ? (
+        <FlatList
+          data={pages.data ?? []}
+          keyExtractor={(p) => p.id}
+          contentContainerStyle={{ gap: space.sm }}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item, index }) => (
+            <Animated.View entering={enter.rise(staggerDelay(index))}>
+              <PageRow page={item} />
+            </Animated.View>
+          )}
+          ListEmptyComponent={
+            debounced.length >= 2 && !pages.isLoading ? (
+              <AppText color={colors.textMuted} style={{ textAlign: 'center' }}>
+                No Pages found for “{debounced}”.
+              </AppText>
+            ) : null
+          }
+        />
+      ) : (
       <FlatList
         data={results.data ?? []}
         keyExtractor={(u) => u.id}
@@ -46,6 +90,7 @@ export default function Search() {
           ) : null
         }
       />
+      )}
     </View>
   );
 }

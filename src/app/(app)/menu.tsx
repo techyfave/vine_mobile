@@ -15,7 +15,7 @@ export default function Menu() {
   const items = [
     { icon: icons.friendsNav, label: 'Followers & Following', onPress: () => soon('Followers & Following') },
     { icon: icons.groupsNav, label: 'Groups', onPress: () => soon('Groups') },
-    { icon: icons.pagesNav, label: 'Pages', onPress: () => soon('Pages') },
+    { icon: icons.pagesNav, label: 'Pages', onPress: () => router.push(routes.pages) },
     { icon: icons.likedNav, label: 'Saved', onPress: () => router.push('/saved') },
   ];
   const footer = [
