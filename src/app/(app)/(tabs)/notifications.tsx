@@ -99,6 +99,7 @@ function NotificationRow({ item }: { item: Notification }) {
   const isFollow = item.type === 'follow';
   const open = () => {
     if (item.post_id) router.push({ pathname: '/post/[id]', params: { id: item.post_id } });
+    else if (item.page_slug) router.push(routes.page(item.page_slug));
     else if (item.actor) router.push(routes.profile(item.actor.username));
   };
   return (

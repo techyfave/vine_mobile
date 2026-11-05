@@ -616,7 +616,8 @@ export interface paths {
         };
         /**
          * Feed Timeline
-         * @description Chronological home feed: the viewer's own posts and posts from people they follow (minus muted).
+         * @description Chronological home feed: the viewer's own posts, posts from people they follow, posts on Pages they
+         *     follow or belong to, and announcements addressed to them (minus muted people).
          */
         get: operations["apps_feed_api_feed_timeline"];
         put?: never;
@@ -989,6 +990,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pages/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Types
+         * @description Types a user can pick when creating a Page, with what each one offers.
+         */
+        get: operations["apps_pages_api_page_types"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pages/": {
         parameters: {
             query?: never;
@@ -1001,6 +1022,26 @@ export interface paths {
         put?: never;
         /** Create Page */
         post: operations["apps_pages_api_create_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Pages
+         * @description Pages the viewer belongs to (or asked to join), helps run, and follows.
+         */
+        get: operations["apps_pages_api_my_pages"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1025,6 +1066,40 @@ export interface paths {
         patch: operations["apps_pages_api_page_update"];
         trace?: never;
     };
+    "/api/v1/pages/{slug}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Logo */
+        post: operations["apps_pages_api_page_logo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Cover */
+        post: operations["apps_pages_api_page_cover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pages/{slug}/join": {
         parameters: {
             query?: never;
@@ -1034,9 +1109,34 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Page Join */
+        /**
+         * Page Join
+         * @description Join: approved at once when the Page is open, otherwise a request (status 'pending').
+         */
         post: operations["apps_pages_api_page_join"];
-        delete?: never;
+        /**
+         * Page Leave
+         * @description Leave the Page, or withdraw a pending request.
+         */
+        delete: operations["apps_pages_api_page_leave"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Follow */
+        post: operations["apps_pages_api_page_follow"];
+        /** Page Unfollow */
+        delete: operations["apps_pages_api_page_unfollow"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1052,17 +1152,16 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Remove Member
+         * @description Decline a join request or remove a member. Rules: `services.remove_member`.
+         */
+        delete: operations["apps_pages_api_remove_member"];
         options?: never;
         head?: never;
         /**
          * Moderate Member
-         * @description Approve/ban members and change roles.
-         *
-         *     Rules (prevents privilege escalation):
-         *     - Moderators may only change the status of plain members; they cannot change roles.
-         *     - Admins may change status and roles, but only the Page owner may grant or remove admin.
-         *     - Nobody can modify the Page owner or their own membership here.
+         * @description Approve/ban members and change their legacy role (admin/moderator). Rules: `services.moderate_member`.
          */
         patch: operations["apps_pages_api_moderate_member"];
         trace?: never;
@@ -1074,7 +1173,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Page Members */
+        /**
+         * Page Members
+         * @description Members are visible to the Page's members and managers only: belonging to a church is personal.
+         */
         get: operations["apps_pages_api_page_members"];
         put?: never;
         post?: never;
@@ -1093,7 +1195,8 @@ export interface paths {
         };
         /**
          * Page Feed
-         * @description Posts published to this Page that the viewer may see (public posts, plus members-only for members).
+         * @description Posts published to this Page that the viewer may see (public posts, members-only posts for members),
+         *     plus announcements its organization addressed to this Page.
          */
         get: operations["apps_pages_api_page_feed"];
         put?: never;
@@ -1146,11 +1249,328 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Announcements List */
+        /**
+         * Announcements List
+         * @description Announcements on this Page that the viewer is in the audience for (pinned first).
+         */
         get: operations["apps_pages_api_announcements_list"];
         put?: never;
-        /** Announcements Create */
+        /**
+         * Announcements Create
+         * @description Send an announcement. Without `audience` it goes to this Page's own members (as before).
+         */
         post: operations["apps_pages_api_announcements_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page Notification Prefs */
+        get: operations["apps_pages_api_page_notification_prefs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Page Notification Prefs Update */
+        patch: operations["apps_pages_api_page_notification_prefs_update"];
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Me
+         * @description The viewer's roles and permissions on this Page, so the app shows only the controls they may use.
+         */
+        get: operations["apps_pages_api_page_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page Roles */
+        get: operations["apps_pages_api_page_roles"];
+        put?: never;
+        /** Page Role Grant */
+        post: operations["apps_pages_api_page_role_grant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/roles/{assignment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Page Role Revoke */
+        delete: operations["apps_pages_api_page_role_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/ownership-transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Ownership Transfer */
+        post: operations["apps_pages_api_page_ownership_transfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Organization
+         * @description The organization this Page belongs to: its HQ and branches. Null for a standalone Page (no hierarchy UI).
+         */
+        get: operations["apps_pages_api_page_organization"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page Branch Links */
+        get: operations["apps_pages_api_page_branch_links"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Page Branch Invite
+         * @description HQ invites an existing Page to become one of its branches; that Page's owner accepts or declines.
+         */
+        post: operations["apps_pages_api_page_branch_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Page Branch Request
+         * @description This Page's owner asks to join an HQ as a branch; the HQ approves or declines.
+         */
+        post: operations["apps_pages_api_page_branch_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-links/{link_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Branch Link Decide */
+        post: operations["apps_pages_api_page_branch_link_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-links/{link_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Branch Link Cancel */
+        post: operations["apps_pages_api_page_branch_link_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/branch-links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Page Branch Unlink */
+        delete: operations["apps_pages_api_page_branch_unlink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/organization/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Page Organization Settings */
+        patch: operations["apps_pages_api_page_organization_settings"];
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page Verification */
+        get: operations["apps_pages_api_page_verification"];
+        put?: never;
+        /** Page Verification Submit */
+        post: operations["apps_pages_api_page_verification_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Transfers
+         * @description Pending moves into this Page, for people who manage its members.
+         */
+        get: operations["apps_pages_api_page_transfers"];
+        put?: never;
+        /**
+         * Page Transfer Request
+         * @description Ask to move your home to this Page (another branch or the HQ of your organization).
+         */
+        post: operations["apps_pages_api_page_transfer_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/transfers/{transfer_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Transfer Decide */
+        post: operations["apps_pages_api_page_transfer_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/transfers/{transfer_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Page Transfer Cancel */
+        post: operations["apps_pages_api_page_transfer_cancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1202,6 +1622,644 @@ export interface paths {
         put?: never;
         /** Mark Read */
         post: operations["apps_notifications_api_mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live List
+         * @description A Page's services, plus its HQ's (a branch shows the HQ's services too).
+         */
+        get: operations["apps_streaming_api_live_list"];
+        put?: never;
+        /**
+         * Live Create
+         * @description Schedule a live service on a Page. The app then fetches ingest details for the encoder.
+         */
+        post: operations["apps_streaming_api_live_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Detail */
+        get: operations["apps_streaming_api_live_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Live Update */
+        patch: operations["apps_streaming_api_live_update"];
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live Ingest
+         * @description RTMPS URL and stream key for the encoder. Managers only; every view is audited.
+         */
+        get: operations["apps_streaming_api_live_ingest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live End */
+        post: operations["apps_streaming_api_live_end"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Chat History */
+        get: operations["apps_streaming_api_live_chat_history"];
+        put?: never;
+        /**
+         * Live Chat Send
+         * @description REST fallback for clients without a WebSocket; the message is broadcast the same way.
+         */
+        post: operations["apps_streaming_api_live_chat_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/chat/{message_id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live Chat Remove */
+        post: operations["apps_streaming_api_live_chat_remove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/restrictions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Live Restrict
+         * @description Mute someone in chat on this Page for a while (moderators: volunteers and Page leadership).
+         */
+        post: operations["apps_streaming_api_live_restrict"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/react": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live React */
+        post: operations["apps_streaming_api_live_react"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/prayer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live Prayer List
+         * @description The care team sees every request; everyone else sees requests shared with the room, and their own.
+         */
+        get: operations["apps_streaming_api_live_prayer_list"];
+        put?: never;
+        /** Live Prayer Create */
+        post: operations["apps_streaming_api_live_prayer_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/prayer/{prayer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Live Prayer Update */
+        patch: operations["apps_streaming_api_live_prayer_update"];
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Note List */
+        get: operations["apps_streaming_api_live_note_list"];
+        put?: never;
+        /** Live Note Create */
+        post: operations["apps_streaming_api_live_note_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/responses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Response List */
+        get: operations["apps_streaming_api_live_response_list"];
+        put?: never;
+        /** Live Response Create */
+        post: operations["apps_streaming_api_live_response_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/{room_id}/responses/{response_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Live Response Update */
+        patch: operations["apps_streaming_api_live_response_update"];
+        trace?: never;
+    };
+    "/api/v1/realtime/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Realtime Ticket
+         * @description A single-use ticket (30 s) for opening a WebSocket: wss://<realtime host>/ws/live/<room id>/?ticket=...
+         */
+        post: operations["apps_streaming_api_realtime_ticket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/cloudflare/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cloudflare Live Webhook
+         * @description Cloudflare Notifications "Stream Live Input" events: live_input.connected / live_input.disconnected.
+         */
+        post: operations["apps_streaming_api_cloudflare_live_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/cloudflare/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cloudflare Stream Webhook
+         * @description Cloudflare Stream video webhooks (signed): a recording finished processing -> the replay.
+         */
+        post: operations["apps_streaming_api_cloudflare_stream_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Giving Options
+         * @description Who the viewer can give to from this Page: their home branch first, one tap to the HQ or another branch.
+         */
+        get: operations["apps_giving_api_giving_options"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/gifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gift Create
+         * @description Start a gift. Returns what the app's payment sheet needs; the gift completes when the provider confirms it.
+         */
+        post: operations["apps_giving_api_gift_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/me/gifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Gifts */
+        get: operations["apps_giving_api_my_gifts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/me/recurring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Recurring */
+        get: operations["apps_giving_api_my_recurring"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/me/recurring/{plan_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** My Recurring Cancel */
+        post: operations["apps_giving_api_my_recurring_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/me/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Statements
+         * @description Year-end giving statements, one per church entity given to (for tax purposes).
+         */
+        get: operations["apps_giving_api_my_statements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wallet Status */
+        get: operations["apps_giving_api_wallet_status"];
+        put?: never;
+        /** Wallet Open */
+        post: operations["apps_giving_api_wallet_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Wallet Update */
+        patch: operations["apps_giving_api_wallet_update"];
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/payout-account/onboarding-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Payout Onboarding
+         * @description A link to the provider's onboarding (identity, bank account). Creates the payout account the first time.
+         */
+        post: operations["apps_giving_api_payout_onboarding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/payout-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Payout Receipt Identity */
+        patch: operations["apps_giving_api_payout_receipt_identity"];
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/payout-account/share-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Payout Share Request
+         * @description A branch asks to receive gifts through its HQ's payout account (same legal entity).
+         */
+        post: operations["apps_giving_api_payout_share_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/payout-shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Payout Shares */
+        get: operations["apps_giving_api_payout_shares"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/payout-shares/{share_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Payout Share Decide */
+        post: operations["apps_giving_api_payout_share_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/funds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Funds List */
+        get: operations["apps_giving_api_funds_list"];
+        put?: never;
+        /** Fund Create */
+        post: operations["apps_giving_api_fund_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/funds/{fund_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Fund Update */
+        patch: operations["apps_giving_api_fund_update"];
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Giving Totals
+         * @description Totals by fund, or by branch for an HQ. Never individual gifts; tiny buckets are hidden.
+         */
+        get: operations["apps_giving_api_giving_totals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/gifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Donor Gift List
+         * @description Individual gifts: this Page's finance admins only. Every view is audited.
+         */
+        get: operations["apps_giving_api_donor_gift_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/giving/pages/{slug}/gifts/{gift_id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Gift Refund */
+        post: operations["apps_giving_api_gift_refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/payments/stripe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stripe Webhook
+         * @description Stripe Connect events (connected accounts). Verified by signature; each event is applied once.
+         */
+        post: operations["apps_giving_api_stripe_webhook"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1657,6 +2715,12 @@ export interface components {
             /** Id */
             id: string;
             author: components["schemas"]["PostAuthorSchema"];
+            page?: components["schemas"]["PostPageSchema"] | null;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
             /** Content */
             content: string;
             /** Post Type */
@@ -1722,6 +2786,23 @@ export interface components {
              * @default
              */
             thumbnail_url: string;
+        };
+        /**
+         * PostPageSchema
+         * @description The Page a post was published to (shown as the post's source instead of the person who typed it).
+         */
+        PostPageSchema: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Logo */
+            logo?: string | null;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean;
         };
         /** CursorPage[PostDetailSchema] */
         CursorPage_PostDetailSchema_: {
@@ -1875,6 +2956,45 @@ export interface components {
              */
             note: string;
         };
+        /** PageTypeOut */
+        PageTypeOut: {
+            /** Slug */
+            slug: string;
+            /** Label */
+            label: string;
+            /** Capabilities */
+            capabilities: string[];
+            /**
+             * Profile Fields
+             * @default []
+             */
+            profile_fields: string[];
+        };
+        /** PageCardOut */
+        PageCardOut: {
+            /** Id */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Page Type */
+            page_type: string;
+            /** Member Count */
+            member_count: number;
+            /**
+             * Follower Count
+             * @default 0
+             */
+            follower_count: number;
+            /** Logo */
+            logo?: string | null;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean;
+        };
         /** PageCreateSchema */
         PageCreateSchema: {
             /** Name */
@@ -1884,7 +3004,7 @@ export interface components {
              * @default church
              * @enum {string}
              */
-            page_type: "church" | "ministry" | "fellowship" | "organization" | "creator" | "business";
+            page_type: "church" | "ministry" | "fellowship" | "organization" | "creator";
             /**
              * Description
              * @default
@@ -1916,12 +3036,84 @@ export interface components {
              */
             address: string;
         };
-        /** PagePatchSchema */
+        /** PaginatedResponse[PageCardOut] */
+        PaginatedResponse_PageCardOut_: {
+            /** Count */
+            count: number;
+            /** Next */
+            next: string | null;
+            /** Previous */
+            previous: string | null;
+            /** Results */
+            results: components["schemas"]["PageCardOut"][];
+        };
+        /** MyMembershipOut */
+        MyMembershipOut: {
+            page: components["schemas"]["PageCardOut"];
+            /** Status */
+            status: string;
+            /** Is Home */
+            is_home: boolean;
+        };
+        /** MyPagesOut */
+        MyPagesOut: {
+            /** Memberships */
+            memberships: components["schemas"]["MyMembershipOut"][];
+            /** Managing */
+            managing: components["schemas"]["PageCardOut"][];
+            /** Following */
+            following: components["schemas"]["PageCardOut"][];
+        };
+        /** PageDetailOut */
+        PageDetailOut: {
+            /** Id */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Page Type */
+            page_type: string;
+            /** Member Count */
+            member_count: number;
+            /**
+             * Follower Count
+             * @default 0
+             */
+            follower_count: number;
+            /** Logo */
+            logo?: string | null;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean;
+            /** Description */
+            description: string;
+            /** Location */
+            location: string;
+            /** Website */
+            website: string;
+            /** Phone */
+            phone: string;
+            /** Address */
+            address: string;
+            /** Denomination */
+            denomination: string;
+            /** Cover Photo */
+            cover_photo?: string | null;
+            /** Join Policy */
+            join_policy: string;
+            hq?: components["schemas"]["PageCardOut"] | null;
+        };
+        /**
+         * PagePatchSchema
+         * @description Page type is not editable: it is locked at creation (platform staff change it in Django admin).
+         *     Clients that still send `page_type` have it ignored, not rejected.
+         */
         PagePatchSchema: {
             /** Description */
             description?: string | null;
-            /** Page Type */
-            page_type?: ("church" | "ministry" | "fellowship" | "organization" | "creator" | "business") | null;
             /** Denomination */
             denomination?: string | null;
             /** Location */
@@ -1932,6 +3124,24 @@ export interface components {
             phone?: string | null;
             /** Address */
             address?: string | null;
+            /** Join Policy */
+            join_policy?: ("open" | "approval") | null;
+        };
+        /** JoinOut */
+        JoinOut: {
+            /** Detail */
+            detail: string;
+            /** Created */
+            created: boolean;
+            /** Status */
+            status: string;
+        };
+        /** FollowOut */
+        FollowOut: {
+            /** Following */
+            following: boolean;
+            /** Follower Count */
+            follower_count: number;
         };
         /** MemberPatchSchema */
         MemberPatchSchema: {
@@ -1942,6 +3152,32 @@ export interface components {
             status: "pending" | "approved" | "banned";
             /** Role */
             role?: ("member" | "moderator" | "admin") | null;
+        };
+        /** MemberOut */
+        MemberOut: {
+            /** User Id */
+            user_id: string;
+            /** Username */
+            username: string;
+            /** Name */
+            name: string;
+            /** Profile Picture */
+            profile_picture?: string | null;
+            /** Status */
+            status: string;
+            /** Role */
+            role: string;
+        };
+        /** PaginatedResponse[MemberOut] */
+        PaginatedResponse_MemberOut_: {
+            /** Count */
+            count: number;
+            /** Next */
+            next: string | null;
+            /** Previous */
+            previous: string | null;
+            /** Results */
+            results: components["schemas"]["MemberOut"][];
         };
         /** EventCreateSchema */
         EventCreateSchema: {
@@ -1975,6 +3211,29 @@ export interface components {
             /** Stream Link */
             stream_link?: string | null;
         };
+        /** AnnouncementOut */
+        AnnouncementOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Pinned */
+            pinned: boolean;
+            /** Created At */
+            created_at: string;
+            from_page: components["schemas"]["PageCardOut"];
+            /** Audience */
+            audience?: components["schemas"]["AudienceRowOut"][] | null;
+        };
+        /** AudienceRowOut */
+        AudienceRowOut: {
+            /** Page Id */
+            page_id: string;
+            /** Role */
+            role?: string | null;
+        };
         /** AnnounceCreateSchema */
         AnnounceCreateSchema: {
             /** Title */
@@ -1986,6 +3245,206 @@ export interface components {
              * @default false
              */
             is_pinned: boolean;
+            audience?: components["schemas"]["AudienceSchema"];
+        };
+        /**
+         * AudienceSchema
+         * @description Who an announcement is for. Branches can use own_page and role (on themselves); HQs can use any kind.
+         */
+        AudienceSchema: {
+            /**
+             * Kind
+             * @default own_page
+             * @enum {string}
+             */
+            kind: "own_page" | "organization" | "all_branches" | "branches" | "role";
+            /**
+             * Page Ids
+             * @description For kind=branches
+             */
+            page_ids?: string[];
+            /**
+             * Page Id
+             * @description For kind=role: the Page whose role-holders are addressed
+             */
+            page_id?: string | null;
+            /**
+             * Role
+             * @description For kind=role
+             */
+            role?: ("care_team" | "finance_admin" | "moderator" | "org_admin" | "owner" | "page_admin" | "volunteer") | null;
+        };
+        /** NotificationPrefsOut */
+        NotificationPrefsOut: {
+            /** Announcements */
+            announcements: boolean;
+            /** Live Alerts */
+            live_alerts: boolean;
+        };
+        /** NotificationPrefsSchema */
+        NotificationPrefsSchema: {
+            /** Announcements */
+            announcements?: boolean | null;
+            /** Live Alerts */
+            live_alerts?: boolean | null;
+        };
+        /**
+         * PageMeOut
+         * @description The viewer's relationship to a Page, so the app shows only what they may do.
+         */
+        PageMeOut: {
+            /** Membership */
+            membership?: string | null;
+            /**
+             * Is Home
+             * @default false
+             */
+            is_home: boolean;
+            /**
+             * Following
+             * @default false
+             */
+            following: boolean;
+            /** Roles */
+            roles: string[];
+            /** Permissions */
+            permissions: string[];
+            /** Capabilities */
+            capabilities: string[];
+        };
+        /** RoleAssignmentOut */
+        RoleAssignmentOut: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** Username */
+            username: string;
+            /** Role */
+            role: string;
+            /** Granted At */
+            granted_at: string;
+        };
+        /** RoleGrantSchema */
+        RoleGrantSchema: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "care_team" | "finance_admin" | "moderator" | "org_admin" | "owner" | "page_admin" | "volunteer";
+        };
+        /** OwnershipTransferSchema */
+        OwnershipTransferSchema: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /** OrganizationOut */
+        OrganizationOut: {
+            hq: components["schemas"]["PageCardOut"];
+            /** Branches */
+            branches: components["schemas"]["PageCardOut"][];
+            /** Is Hq */
+            is_hq: boolean;
+        };
+        /** BranchLinkOut */
+        BranchLinkOut: {
+            /** Id */
+            id: string;
+            hq: components["schemas"]["PageCardOut"];
+            branch: components["schemas"]["PageCardOut"];
+            /** Direction */
+            direction: string;
+            /** Status */
+            status: string;
+            /** Message */
+            message: string;
+            /** Created At */
+            created_at: string;
+            /** Expires At */
+            expires_at: string;
+        };
+        /** BranchInviteSchema */
+        BranchInviteSchema: {
+            /** Branch Slug */
+            branch_slug: string;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
+        /** BranchRequestSchema */
+        BranchRequestSchema: {
+            /** Hq Slug */
+            hq_slug: string;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
+        /** LinkDecisionSchema */
+        LinkDecisionSchema: {
+            /** Accept */
+            accept: boolean;
+        };
+        /** OrgSettingsSchema */
+        OrgSettingsSchema: {
+            /** Hq Can View Branch Members */
+            hq_can_view_branch_members: boolean;
+        };
+        /** VerificationSubmitSchema */
+        VerificationSubmitSchema: {
+            /** Legal Name */
+            legal_name: string;
+            /**
+             * Registration Number
+             * @default
+             */
+            registration_number: string;
+            /**
+             * Country
+             * @default
+             */
+            country: string;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
+            /** Contact Email */
+            contact_email: string;
+            /**
+             * Contact Phone
+             * @default
+             */
+            contact_phone: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+        };
+        /** TransferRequestSchema */
+        TransferRequestSchema: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
+        /** TransferDecisionSchema */
+        TransferDecisionSchema: {
+            /** Approve */
+            approve: boolean;
         };
         /** CursorPage[NotificationSchema] */
         CursorPage_NotificationSchema_: {
@@ -2023,6 +3482,16 @@ export interface components {
             /** Post Id */
             post_id?: string | null;
             /**
+             * Page Slug
+             * @description Set when the notification is about a Page (open that Page)
+             */
+            page_slug?: string | null;
+            /**
+             * Live Room Id
+             * @description Set for go-live alerts (open the live service)
+             */
+            live_room_id?: string | null;
+            /**
              * Viewer Follows Actor
              * @description Drives the "Follow back" button
              * @default false
@@ -2041,6 +3510,250 @@ export interface components {
              * @description Omit to mark everything read
              */
             ids?: string[] | null;
+        };
+        /** LiveCreateSchema */
+        LiveCreateSchema: {
+            /** Page Slug */
+            page_slug: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Scheduled At */
+            scheduled_at?: string | null;
+            /** Event Id */
+            event_id?: string | null;
+            /**
+             * Widgets
+             * @description Defaults to every widget the Page type offers
+             */
+            widgets?: ("chat" | "reactions" | "prayer" | "sermon_notes" | "visitor_form" | "give")[] | null;
+            /**
+             * Slow Mode Seconds
+             * @default 0
+             */
+            slow_mode_seconds: number;
+        };
+        /** LivePatchSchema */
+        LivePatchSchema: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Scheduled At */
+            scheduled_at?: string | null;
+            /** Widgets */
+            widgets?: ("chat" | "reactions" | "prayer" | "sermon_notes" | "visitor_form" | "give")[] | null;
+            /** Slow Mode Seconds */
+            slow_mode_seconds?: number | null;
+        };
+        /** ChatSendSchema */
+        ChatSendSchema: {
+            /** Body */
+            body: string;
+        };
+        /** RestrictSchema */
+        RestrictSchema: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Minutes
+             * @default 60
+             */
+            minutes: number;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** ReactSchema */
+        ReactSchema: {
+            /** Kind */
+            kind: string;
+        };
+        /** PrayerCreateSchema */
+        PrayerCreateSchema: {
+            /** Body */
+            body: string;
+            /**
+             * Share With
+             * @default care_team
+             * @enum {string}
+             */
+            share_with: "care_team" | "room";
+        };
+        /** PrayerPatchSchema */
+        PrayerPatchSchema: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "prayed" | "removed";
+        };
+        /** NoteCreateSchema */
+        NoteCreateSchema: {
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /**
+             * Body
+             * @default
+             */
+            body: string;
+            /** Scripture Refs */
+            scripture_refs?: components["schemas"]["ScriptureRefSchema"][];
+        };
+        /** ScriptureRefSchema */
+        ScriptureRefSchema: {
+            /**
+             * Ref
+             * @description e.g. "John 3:16-18"
+             */
+            ref: string;
+            /**
+             * Translation
+             * @default
+             */
+            translation: string;
+        };
+        /** ResponseCreateSchema */
+        ResponseCreateSchema: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "first_time" | "prayer" | "decision" | "connect";
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
+             * Phone
+             * @default
+             */
+            phone: string;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+            /**
+             * Consent
+             * @description Agreed to be contacted by this church
+             */
+            consent: boolean;
+        };
+        /** ResponsePatchSchema */
+        ResponsePatchSchema: {
+            /** Status */
+            status?: ("new" | "contacted" | "closed") | null;
+            /** Assigned To */
+            assigned_to?: string | null;
+        };
+        /** GiftCreateSchema */
+        GiftCreateSchema: {
+            /**
+             * Wallet Id
+             * Format: uuid
+             */
+            wallet_id: string;
+            /**
+             * Fund Id
+             * Format: uuid
+             */
+            fund_id: string;
+            /**
+             * Amount Minor
+             * @description In the currency minor unit (cents for USD, yen for JPY)
+             */
+            amount_minor: number;
+            /** Recurring */
+            recurring?: ("weekly" | "biweekly" | "monthly") | null;
+            /**
+             * Live Room Id
+             * @description Set when giving from a live service
+             */
+            live_room_id?: string | null;
+            /**
+             * Idempotency Key
+             * @description New per gift; reuse it to retry
+             */
+            idempotency_key: string;
+        };
+        /** WalletCreateSchema */
+        WalletCreateSchema: {
+            /** Currency */
+            currency?: string | null;
+        };
+        /** WalletPatchSchema */
+        WalletPatchSchema: {
+            /** Is Enabled */
+            is_enabled: boolean;
+        };
+        /** ReceiptIdentitySchema */
+        ReceiptIdentitySchema: {
+            /** Legal Name */
+            legal_name?: string | null;
+            /** Tax Id Display */
+            tax_id_display?: string | null;
+            /** Address */
+            address?: string | null;
+            /** Receipt Signatory */
+            receipt_signatory?: string | null;
+            /** Tax Statement */
+            tax_statement?: ("none" | "us_no_goods") | null;
+        };
+        /** ShareDecisionSchema */
+        ShareDecisionSchema: {
+            /** Approve */
+            approve: boolean;
+        };
+        /** FundCreateSchema */
+        FundCreateSchema: {
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @default custom
+             * @enum {string}
+             */
+            kind: "tithe" | "offering" | "building" | "missions" | "custom";
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+        };
+        /** FundPatchSchema */
+        FundPatchSchema: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Sort Order */
+            sort_order?: number | null;
+        };
+        /** RefundSchema */
+        RefundSchema: {
+            /**
+             * Amount Minor
+             * @description Omit to refund what is left
+             */
+            amount_minor?: number | null;
         };
     };
     responses: never;
@@ -3636,6 +5349,26 @@ export interface operations {
             };
         };
     };
+    apps_pages_api_page_types: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageTypeOut"][];
+                };
+            };
+        };
+    };
     apps_pages_api_page_list_public: {
         parameters: {
             query?: {
@@ -3654,7 +5387,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_PageCardOut_"];
+                };
             };
         };
     };
@@ -3676,7 +5411,29 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PageCardOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_my_pages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPagesOut"];
+                };
             };
         };
     };
@@ -3696,7 +5453,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PageDetailOut"];
+                };
             };
         };
     };
@@ -3720,7 +5479,73 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PageDetailOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_logo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * File
+                     * Format: binary
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_cover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * File
+                     * Format: binary
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOut"];
+                };
             };
         };
     };
@@ -3730,6 +5555,93 @@ export interface operations {
             header?: never;
             path: {
                 slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JoinOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_leave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_follow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_unfollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_remove_member: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                user_id: string;
             };
             cookie?: never;
         };
@@ -3772,6 +5684,7 @@ export interface operations {
     apps_pages_api_page_members: {
         parameters: {
             query?: {
+                status?: ("approved" | "pending" | "banned") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3788,7 +5701,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_MemberOut_"];
+                };
             };
         };
     };
@@ -3898,7 +5813,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AnnouncementOut"][];
+                };
             };
         };
     };
@@ -3916,6 +5833,500 @@ export interface operations {
                 "application/json": components["schemas"]["AnnounceCreateSchema"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnouncementOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_notification_prefs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPrefsOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_notification_prefs_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationPrefsSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPrefsOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageMeOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAssignmentOut"][];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_role_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleGrantSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAssignmentOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_role_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_ownership_transfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnershipTransferSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_organization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationOut"] | null;
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_links: {
+        parameters: {
+            query?: {
+                status?: "pending" | "accepted" | "all";
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"][];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchInviteSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchRequestSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_link_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkDecisionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_link_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_branch_unlink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchLinkOut"];
+                };
+            };
+        };
+    };
+    apps_pages_api_page_organization_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgSettingsSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_verification_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerificationSubmitSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_transfers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_transfer_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferRequestSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_transfer_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                transfer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferDecisionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_pages_api_page_transfer_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                transfer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -3990,6 +6401,944 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UnreadCountSchema"];
                 };
+            };
+        };
+    };
+    apps_streaming_api_live_list: {
+        parameters: {
+            query: {
+                page_slug: string;
+                when?: "upcoming" | "live" | "past" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LivePatchSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_ingest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_end: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_chat_history: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_chat_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatSendSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_chat_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_restrict: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestrictSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_react: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReactSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_prayer_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_prayer_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrayerCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_prayer_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+                prayer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrayerPatchSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_note_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_note_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_response_list: {
+        parameters: {
+            query?: {
+                status?: ("new" | "contacted" | "closed") | null;
+            };
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_response_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResponseCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_live_response_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                room_id: string;
+                response_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResponsePatchSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_realtime_ticket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_cloudflare_live_webhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_streaming_api_cloudflare_stream_webhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_giving_options: {
+        parameters: {
+            query: {
+                page_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_gift_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiftCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_my_gifts: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_my_recurring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_my_recurring_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_my_statements: {
+        parameters: {
+            query: {
+                year: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_wallet_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_wallet_open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_wallet_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletPatchSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_payout_onboarding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_payout_receipt_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiptIdentitySchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_payout_share_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_payout_shares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_payout_share_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                share_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareDecisionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_funds_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_fund_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FundCreateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_fund_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                fund_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FundPatchSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_giving_totals: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+                group_by?: "fund" | "branch";
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_donor_gift_list: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_gift_refund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                gift_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_giving_api_stripe_webhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

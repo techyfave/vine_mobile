@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { memo, useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 
+import { PageLogo, VerifiedMark } from '@/features/pages/components';
 import { routes } from '@/lib/routes';
 import { errorMessage } from '@/api/errors';
 import { useAuth } from '@/auth/AuthProvider';
@@ -114,7 +115,16 @@ const PostCardBody = memo(function PostCardBody({
   const photos = post.media.filter((m) => m.media_type === 'image' && m.url).map((m) => m.url as string);
   const mine = user?.id === post.author.id;
   const open = () => !inDetail && router.push({ pathname: '/post/[id]', params: { id: post.id } });
-  const openProfile = () => router.push(routes.profile(post.author.username));
+  const openProfile = () =>
+    router.push(post.page ? routes.page(post.page.slug) : routes.profile(post.author.username));
+  const audienceLabel =
+    post.post_type === 'announcement'
+      ? 'Announcement'
+      : post.visibility === 'followers'
+        ? 'Followers'
+        : post.visibility === 'page'
+          ? 'Members'
+          : 'Public';
   const name = `@${post.author.username}`;
 
   const fail = (err: unknown) => Alert.alert("Couldn't do that", errorMessage(err));
@@ -205,14 +215,27 @@ const PostCardBody = memo(function PostCardBody({
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Pressable style={styles.author} onPress={openProfile} accessibilityRole="link" accessibilityLabel={`${displayName(post.author)}'s profile`}>
-          <Avatar uri={post.author.profile_picture} size={46} />
+        <Pressable
+          style={styles.author}
+          onPress={openProfile}
+          accessibilityRole="link"
+          accessibilityLabel={post.page ? post.page.name : `${displayName(post.author)}'s profile`}
+        >
+          {post.page ? (
+            <PageLogo uri={post.page.logo} name={post.page.name} size={46} />
+          ) : (
+            <Avatar uri={post.author.profile_picture} size={46} />
+          )}
           <View style={{ gap: 2, flexShrink: 1 }}>
-            <AppText variant="heading" numberOfLines={1}>
-              {displayName(post.author)}
-            </AppText>
-            <AppText variant="caption" color={colors.textMuted}>
-              {timeAgo(post.created_at)} · {post.visibility === 'followers' ? 'Followers' : 'Public'}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <AppText variant="heading" numberOfLines={1} style={{ flexShrink: 1 }}>
+                {post.page ? post.page.name : displayName(post.author)}
+              </AppText>
+              {post.page?.is_verified ? <VerifiedMark size={12} /> : null}
+            </View>
+            <AppText variant="caption" color={colors.textMuted} numberOfLines={1}>
+              {timeAgo(post.created_at)} · {audienceLabel}
+              {post.page ? ` · by ${displayName(post.author)}` : ''}
             </AppText>
           </View>
         </Pressable>
@@ -232,6 +255,11 @@ const PostCardBody = memo(function PostCardBody({
         </View>
       </View>
 
+      {post.title ? (
+        <AppText variant="heading" onPress={inDetail ? undefined : open}>
+          {post.title}
+        </AppText>
+      ) : null}
       {post.content ? (
         <Pressable onPress={open} disabled={inDetail}>
           <AppText
