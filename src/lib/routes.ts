@@ -17,6 +17,8 @@ export const routes = {
   pageAnnounce: (slug: string) => `/page/${encodeURIComponent(slug)}/announce` as Href,
   pageBranches: (slug: string) => `/page/${encodeURIComponent(slug)}/branches` as Href,
   pageMembers: (slug: string) => `/page/${encodeURIComponent(slug)}/members` as Href,
+  pagePost: (slug: string, name: string, hasMembers: boolean) =>
+    `/create-post?page=${encodeURIComponent(slug)}&pageName=${encodeURIComponent(name)}${hasMembers ? '&members=1' : ''}` as Href,
   pageEdit: (slug: string) => `/page/${encodeURIComponent(slug)}/edit` as Href,
   pages: '/pages' as Href,
   newPage: '/pages/new' as Href,

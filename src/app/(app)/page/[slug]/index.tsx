@@ -60,7 +60,11 @@ export default function PageScreen() {
   const canEdit = can(m, 'page.edit');
   const canAnnounce = can(m, 'announce.own') || can(m, 'announce.org');
   const canManageMembers = can(m, 'page.members.manage');
-  const canManageBranches = can(m, 'org.branches.manage') || Boolean(m?.roles.includes('owner'));
+  const hasFeature = (capability: string) => Boolean(m?.capabilities.includes(capability));
+  const canManageBranches = hasFeature('hierarchy') && (can(m, 'org.branches.manage') || Boolean(m?.roles.includes('owner')));
+  const canPost = can(m, 'posts.publish');
+  const isOwner = Boolean(m?.roles.includes('owner'));
+  const hasAlerts = hasFeature('announcements') || hasFeature('live');
   const isMember = m?.membership === 'approved';
   const banned = m?.membership === 'banned';
   const fail = (title: string) => (err: unknown) => Alert.alert(title, errorMessage(err));
@@ -102,7 +106,7 @@ export default function PageScreen() {
   const showBranches = Boolean(org.data);
   const tabs: { key: Tab; label: string }[] = [
     { key: 'posts', label: 'Posts' },
-    { key: 'announcements', label: 'Announcements' },
+    ...(hasFeature('announcements') ? [{ key: 'announcements' as Tab, label: 'Announcements' }] : []),
     { key: 'about', label: 'About' },
     ...(showBranches ? [{ key: 'branches' as Tab, label: 'Branches' }] : []),
   ];
@@ -173,34 +177,38 @@ export default function PageScreen() {
               </AppText>
             ) : null}
             <View style={styles.stats}>
-              <Pressable
-                hitSlop={8}
-                accessibilityRole="link"
-                onPress={() =>
-                  isMember || canManageMembers
-                    ? router.push(routes.pageMembers(slug))
-                    : Alert.alert('Members', 'Only members can see who belongs to this Page.')
-                }
-              >
-                <AppText variant="caption" color={colors.textMuted}>
-                  <AppText variant="bodyBold">{p.member_count}</AppText> {p.member_count === 1 ? 'Member' : 'Members'}
-                </AppText>
-              </Pressable>
+              {p.has_members ? (
+                <Pressable
+                  hitSlop={8}
+                  accessibilityRole="link"
+                  onPress={() =>
+                    isMember || canManageMembers
+                      ? router.push(routes.pageMembers(slug))
+                      : Alert.alert('Members', 'Only members can see who belongs to this Page.')
+                  }
+                >
+                  <AppText variant="caption" color={colors.textMuted}>
+                    <AppText variant="bodyBold">{p.member_count}</AppText> {p.member_count === 1 ? 'Member' : 'Members'}
+                  </AppText>
+                </Pressable>
+              ) : null}
               <AppText variant="caption" color={colors.textMuted}>
                 <AppText variant="bodyBold">{p.follower_count}</AppText> {p.follower_count === 1 ? 'Follower' : 'Followers'}
               </AppText>
             </View>
 
-            {m && !banned ? (
+            {m && !banned && !(isOwner && !p.has_members) ? (
               <View style={styles.actions}>
-                <Button
-                  style={{ flex: 1 }}
-                  title={m.following ? 'Following' : 'Follow'}
-                  variant={m.following ? 'outline' : 'primary'}
-                  loading={follow.isPending}
-                  onPress={() => follow.mutate(!m.following, { onError: fail("Couldn't update") })}
-                />
-                {m.membership ? (
+                {isOwner ? null : (
+                  <Button
+                    style={{ flex: 1 }}
+                    title={m.following ? 'Following' : 'Follow'}
+                    variant={m.following ? 'outline' : 'primary'}
+                    loading={follow.isPending}
+                    onPress={() => follow.mutate(!m.following, { onError: fail("Couldn't update") })}
+                  />
+                )}
+                {!p.has_members ? null : m.membership ? (
                   <Button
                     style={{ flex: 1 }}
                     title={m.membership === 'pending' ? 'Requested' : 'Member ✓'}
@@ -225,6 +233,9 @@ export default function PageScreen() {
                   />
                 )}
               </View>
+            ) : null}
+            {canPost ? (
+              <Button title="Create a post" onPress={() => router.push(routes.pagePost(slug, p.name, p.has_members))} />
             ) : null}
             {manageActions.length ? (
               <Button title="Manage Page" variant="ghost" size="sm" onPress={() => setSheet('manage')} />
@@ -287,7 +298,7 @@ export default function PageScreen() {
         options={{
           title: p?.name ?? 'Page',
           headerRight: () =>
-            m?.following || isMember ? (
+            hasAlerts && (m?.following || isMember) ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Notification settings"
@@ -329,13 +340,31 @@ export default function PageScreen() {
       />
       <ActionSheet visible={sheet === 'manage'} title="Manage Page" actions={manageActions} onClose={() => setSheet(null)} />
       <ActionSheet visible={sheet === 'membership'} actions={membershipActions} onClose={() => setSheet(null)} />
-      <AlertsSheet slug={slug} visible={sheet === 'alerts'} onClose={() => setSheet(null)} />
+      <AlertsSheet
+        slug={slug}
+        visible={sheet === 'alerts'}
+        hasAnnouncements={hasFeature('announcements')}
+        hasLive={hasFeature('live')}
+        onClose={() => setSheet(null)}
+      />
       <ImageViewer uri={viewing} onClose={() => setViewing(null)} />
     </View>
   );
 }
 
-function AlertsSheet({ slug, visible, onClose }: { slug: string; visible: boolean; onClose: () => void }) {
+function AlertsSheet({
+  slug,
+  visible,
+  hasAnnouncements,
+  hasLive,
+  onClose,
+}: {
+  slug: string;
+  visible: boolean;
+  hasAnnouncements: boolean;
+  hasLive: boolean;
+  onClose: () => void;
+}) {
   const prefs = useNotificationPrefs(slug);
   const set = useSetNotificationPrefs(slug);
   const on = prefs.data ?? { announcements: true, live_alerts: true };
@@ -346,16 +375,24 @@ function AlertsSheet({ slug, visible, onClose }: { slug: string; visible: boolea
       title="Notifications from this Page"
       onClose={onClose}
       actions={[
-        {
-          label: on.announcements ? 'Turn off announcements' : 'Turn on announcements',
-          hint: on.announcements ? 'You hear about announcements sent to you' : 'Announcements are off',
-          onPress: () => set.mutate({ announcements: !on.announcements }, { onError: fail }),
-        },
-        {
-          label: on.live_alerts ? 'Turn off live alerts' : 'Turn on live alerts',
-          hint: on.live_alerts ? 'You hear when a service goes live' : 'Live alerts are off',
-          onPress: () => set.mutate({ live_alerts: !on.live_alerts }, { onError: fail }),
-        },
+        ...(hasAnnouncements
+          ? [
+              {
+                label: on.announcements ? 'Turn off announcements' : 'Turn on announcements',
+                hint: on.announcements ? 'You hear about announcements sent to you' : 'Announcements are off',
+                onPress: () => set.mutate({ announcements: !on.announcements }, { onError: fail }),
+              },
+            ]
+          : []),
+        ...(hasLive
+          ? [
+              {
+                label: on.live_alerts ? 'Turn off live alerts' : 'Turn on live alerts',
+                hint: on.live_alerts ? 'You hear when this Page goes live' : 'Live alerts are off',
+                onPress: () => set.mutate({ live_alerts: !on.live_alerts }, { onError: fail }),
+              },
+            ]
+          : []),
       ]}
     />
   );
@@ -389,9 +426,11 @@ function About({ page }: { page: NonNullable<ReturnType<typeof usePage>['data']>
           </AppText>
         </View>
       ) : null}
-      <AppText variant="caption" color={colors.textMuted}>
-        {page.join_policy === 'open' ? 'Anyone can join' : 'New members are approved by the Page'}
-      </AppText>
+      {page.has_members ? (
+        <AppText variant="caption" color={colors.textMuted}>
+          {page.join_policy === 'open' ? 'Anyone can join' : 'New members are approved by the Page'}
+        </AppText>
+      ) : null}
     </Card>
   );
 }

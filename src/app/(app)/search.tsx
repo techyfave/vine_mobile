@@ -15,7 +15,7 @@ import { colors, space } from '@/ui/theme';
 
 type Kind = 'people' | 'pages';
 
-/** Find people or Pages (churches, ministries...) by name. */
+/** Find people or Pages by name. */
 export default function Search() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const [kind, setKind] = useState<Kind>(params.tab === 'pages' ? 'pages' : 'people');
@@ -36,7 +36,7 @@ export default function Search() {
   return (
     <View style={{ flex: 1, padding: space.md, gap: space.md }}>
       <Input
-        placeholder={kind === 'pages' ? 'Search churches and Pages' : 'Search people'}
+        placeholder={kind === 'pages' ? 'Search Pages' : 'Search people'}
         value={q}
         onChangeText={setQ}
         autoFocus

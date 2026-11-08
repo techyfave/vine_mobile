@@ -12,13 +12,14 @@ import { useAuth } from '@/auth/AuthProvider';
 import { displayName } from '@/lib/time';
 import { icons } from '@/ui/assets';
 import type { LiftMode } from '@/features/feed/api';
+import { PageLogo } from '@/features/pages/components';
 import { AppText, Avatar, Button, ErrorText, Icon, PressableScale } from '@/ui/components';
 import { enter, exit, layout } from '@/ui/motion';
 import { colors, fonts, radius, space } from '@/ui/theme';
 
 const MAX_PHOTOS = 6;
 
-type Visibility = 'public' | 'followers';
+type Visibility = 'public' | 'followers' | 'page';
 type LiftChoice = 'off' | LiftMode;
 
 const LIFT_OPTIONS: { value: LiftMode; label: string; hint: string }[] = [
@@ -29,7 +30,14 @@ const LIFT_OPTIONS: { value: LiftMode; label: string; hint: string }[] = [
 export default function CreatePost() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { photo, lift: liftParam } = useLocalSearchParams<{ photo?: string; lift?: string }>();
+  // `page` set: posting as a Page. `members` says whether the Page has members to restrict a post to.
+  const {
+    photo,
+    lift: liftParam,
+    page,
+    pageName,
+    members,
+  } = useLocalSearchParams<{ photo?: string; lift?: string; page?: string; pageName?: string; members?: string }>();
   const [content, setContent] = useState('');
   const [scripture, setScripture] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('public');
@@ -71,6 +79,7 @@ export default function CreatePost() {
           const form = new FormData();
           form.append('content', content.trim());
           form.append('visibility', visibility);
+          if (page) form.append('page_slug', page);
           if (scripture.trim()) form.append('scripture_reference', scripture.trim());
           if (lift !== 'off') form.append('lift_mode', lift);
           images.forEach((img, i) =>
@@ -92,16 +101,18 @@ export default function CreatePost() {
   });
 
   const isLift = lift !== 'off';
+  // A Page without members has one audience, so there's nothing to choose.
+  const audiences: Visibility[] = page ? (members ? ['public', 'page'] : []) : ['public', 'followers'];
   const canPost = isLift ? Boolean(content.trim()) : Boolean(content.trim() || images.length);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.white }} contentContainerStyle={{ padding: space.lg, gap: space.lg }} keyboardShouldPersistTaps="handled">
       <View style={styles.author}>
-        <Avatar uri={user?.profile_picture} size={44} />
+        {page ? <PageLogo name={pageName ?? ''} size={44} /> : <Avatar uri={user?.profile_picture} size={44} />}
         <View style={{ gap: 4 }}>
-          <AppText variant="heading">{user ? displayName(user) : ''}</AppText>
+          <AppText variant="heading">{page ? pageName : user ? displayName(user) : ''}</AppText>
           <View style={{ flexDirection: 'row', gap: space.sm }}>
-            {(['public', 'followers'] as const).map((v) => (
+            {audiences.map((v) => (
               <Pressable
                 key={v}
                 accessibilityRole="radio"
@@ -110,7 +121,7 @@ export default function CreatePost() {
                 style={[styles.chip, visibility === v && styles.chipOn]}
               >
                 <AppText variant="caption" color={visibility === v ? colors.white : colors.primary}>
-                  {v === 'public' ? 'Public' : 'Followers'}
+                  {v === 'public' ? 'Public' : v === 'page' ? 'Members' : 'Followers'}
                 </AppText>
               </Pressable>
             ))}
@@ -118,6 +129,7 @@ export default function CreatePost() {
         </View>
       </View>
 
+      {page ? null : (
       <PressableScale
         accessibilityRole="switch"
         accessibilityState={{ checked: isLift }}
@@ -137,6 +149,7 @@ export default function CreatePost() {
           <Animated.View layout={layout} style={[styles.knob, isLift && { alignSelf: 'flex-end' }]} />
         </View>
       </PressableScale>
+      )}
       {isLift ? (
         <Animated.View entering={enter.rise()} style={{ gap: space.sm }}>
           {LIFT_OPTIONS.map((o) => (
@@ -163,7 +176,11 @@ export default function CreatePost() {
         value={content}
         onChangeText={setContent}
         placeholder={
-          isLift ? 'What would you like people to stand with you on?' : `What do you have in mind, ${user?.first_name || user?.username}?`
+          page
+            ? `What's new with ${pageName}?`
+            : isLift
+              ? 'What would you like people to stand with you on?'
+              : `What do you have in mind, ${user?.first_name || user?.username}?`
         }
         placeholderTextColor={colors.textMuted}
         multiline
@@ -171,7 +188,7 @@ export default function CreatePost() {
         maxLength={10000}
         style={styles.body}
       />
-      {!isLift ? (
+      {!isLift && (!page || members) ? (
         <TextInput
           value={scripture}
           onChangeText={setScripture}
