@@ -2962,6 +2962,11 @@ export interface components {
             slug: string;
             /** Label */
             label: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
             /** Capabilities */
             capabilities: string[];
             /**
@@ -2994,6 +2999,11 @@ export interface components {
              * @default false
              */
             is_verified: boolean;
+            /**
+             * Has Members
+             * @default true
+             */
+            has_members: boolean;
         };
         /** PageCreateSchema */
         PageCreateSchema: {
@@ -3004,7 +3014,7 @@ export interface components {
              * @default church
              * @enum {string}
              */
-            page_type: "church" | "ministry" | "fellowship" | "organization" | "creator";
+            page_type: "creator" | "business" | "church";
             /**
              * Description
              * @default
@@ -3088,6 +3098,11 @@ export interface components {
              * @default false
              */
             is_verified: boolean;
+            /**
+             * Has Members
+             * @default true
+             */
+            has_members: boolean;
             /** Description */
             description: string;
             /** Location */

@@ -11,28 +11,21 @@ import { colors, radius, space } from '@/ui/theme';
 
 type PageTypeSlug = PageFields['page_type'];
 
-const TYPE_HINT: Record<string, string> = {
-  church: 'A congregation. Can have campuses, live services and giving.',
-  ministry: 'A ministry or outreach.',
-  fellowship: 'A fellowship or small community.',
-  organization: 'A faith-based organization.',
-  creator: 'A creator or teacher.',
-};
-
 /** Create a Page. The type can't be changed later (it decides what the Page can do). */
 export default function NewPage() {
   const types = usePageTypes();
   const create = useCreatePage();
   const keyboard = useKeyboardHeight();
-  const [type, setType] = useState<PageTypeSlug>('church');
+  const [type, setType] = useState<PageTypeSlug | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [denomination, setDenomination] = useState('');
   const [error, setError] = useState<string>();
-  const hasDenomination = useTypeHasField(type, 'denomination');
+  const hasDenomination = useTypeHasField(type ?? undefined, 'denomination');
 
   function submit() {
+    if (!type) return;
     setError(undefined);
     create.mutate(
       { name: name.trim(), page_type: type, description, location, denomination, website: '', phone: '', address: '' },
@@ -64,9 +57,9 @@ export default function NewPage() {
               <View style={[styles.radio, selected && styles.radioOn]} />
               <View style={{ flex: 1 }}>
                 <AppText variant="bodyBold">{t.label}</AppText>
-                {TYPE_HINT[t.slug] ? (
+                {t.description ? (
                   <AppText variant="caption" color={colors.textMuted}>
-                    {TYPE_HINT[t.slug]}
+                    {t.description}
                   </AppText>
                 ) : null}
               </View>
@@ -81,7 +74,7 @@ export default function NewPage() {
         {hasDenomination ? <Input placeholder="Denomination (optional)" value={denomination} onChangeText={setDenomination} /> : null}
       </Card>
       <ErrorText>{error}</ErrorText>
-      <Button title="Create Page" onPress={submit} loading={create.isPending} disabled={name.trim().length < 2} />
+      <Button title="Create Page" onPress={submit} loading={create.isPending} disabled={!type || name.trim().length < 2} />
     </ScrollView>
   );
 }

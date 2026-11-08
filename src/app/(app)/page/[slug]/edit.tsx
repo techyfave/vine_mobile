@@ -83,15 +83,17 @@ function PageForm({ slug, p }: { slug: string; p: PageDetail }) {
         <Input placeholder="Website (https://…)" value={form.website} onChangeText={set('website')} autoCapitalize="none" keyboardType="url" />
       </Card>
 
-      <Card style={styles.switchRow}>
-        <View style={{ flex: 1 }}>
-          <AppText variant="bodyBold">Anyone can join</AppText>
-          <AppText variant="caption" color={colors.textMuted}>
-            {open ? 'People become members as soon as they join.' : 'You approve each request to join.'}
-          </AppText>
-        </View>
-        <Switch value={open} onValueChange={setOpen} trackColor={{ true: colors.link }} />
-      </Card>
+      {p.has_members ? (
+        <Card style={styles.switchRow}>
+          <View style={{ flex: 1 }}>
+            <AppText variant="bodyBold">Anyone can join</AppText>
+            <AppText variant="caption" color={colors.textMuted}>
+              {open ? 'People become members as soon as they join.' : 'You approve each request to join.'}
+            </AppText>
+          </View>
+          <Switch value={open} onValueChange={setOpen} trackColor={{ true: colors.link }} />
+        </Card>
+      ) : null}
 
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} loading={update.isPending} />

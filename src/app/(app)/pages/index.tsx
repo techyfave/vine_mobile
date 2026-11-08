@@ -21,7 +21,7 @@ export default function MyPagesScreen() {
     >
       <Stack.Screen options={{ title: 'Pages' }} />
       <Button title="Create a Page" onPress={() => router.push(routes.newPage)} />
-      <Button title="Find a church or Page" variant="outline" onPress={() => router.push({ pathname: '/search', params: { tab: 'pages' } })} />
+      <Button title="Find a Page" variant="outline" onPress={() => router.push({ pathname: '/search', params: { tab: 'pages' } })} />
 
       {mine.isLoading ? (
         <View style={{ gap: space.sm }}>
@@ -63,7 +63,7 @@ export default function MyPagesScreen() {
         <Card style={{ alignItems: 'center', gap: space.sm }}>
           <AppText variant="heading">No Pages yet</AppText>
           <AppText color={colors.textMuted} style={{ textAlign: 'center' }}>
-            Find your church to follow its posts and join as a member, or create a Page for your church or ministry.
+            Find Pages to follow, or create one of your own.
           </AppText>
         </Card>
       ) : null}

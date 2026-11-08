@@ -119,7 +119,7 @@ export default function HomeFeed() {
 }
 
 const EMPTY: Record<FeedTab, { title: string; body: string }> = {
-  home: { title: 'Your feed is quiet', body: 'Follow people and churches to see their posts here.' },
+  home: { title: 'Your feed is quiet', body: 'Follow people and Pages to see their posts here.' },
   lifts: { title: 'No Lifts right now', body: 'When people ask for prayer or support, they show up here.' },
   testimonies: { title: 'No testimonies yet', body: 'When a Lift is answered, the story shows up here.' },
 };

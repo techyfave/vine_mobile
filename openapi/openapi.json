@@ -7887,6 +7887,11 @@
             "title": "Label",
             "type": "string"
           },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
           "capabilities": {
             "items": {
               "type": "string"
@@ -7953,6 +7958,11 @@
             "default": false,
             "title": "Is Verified",
             "type": "boolean"
+          },
+          "has_members": {
+            "default": true,
+            "title": "Has Members",
+            "type": "boolean"
           }
         },
         "required": [
@@ -7976,11 +7986,9 @@
           "page_type": {
             "default": "church",
             "enum": [
-              "church",
-              "ministry",
-              "fellowship",
-              "organization",
-              "creator"
+              "creator",
+              "business",
+              "church"
             ],
             "title": "Page Type",
             "type": "string"
@@ -8168,6 +8176,11 @@
           "is_verified": {
             "default": false,
             "title": "Is Verified",
+            "type": "boolean"
+          },
+          "has_members": {
+            "default": true,
+            "title": "Has Members",
             "type": "boolean"
           },
           "description": {

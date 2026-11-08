@@ -55,6 +55,12 @@ export function pageTypeLabel(type: string): string {
   return TYPE_LABEL[type] ?? 'Page';
 }
 
+function audience(page: PageCard): string {
+  const count = page.has_members ? page.member_count : page.follower_count;
+  const noun = page.has_members ? 'member' : 'follower';
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
 /** A Page in a list: tap to open it. `right` holds an action (Invite, a status chip...). */
 export function PageRow({ page, subtitle, right }: { page: PageCard; subtitle?: string; right?: ReactNode }) {
   return (
@@ -73,7 +79,7 @@ export function PageRow({ page, subtitle, right }: { page: PageCard; subtitle?: 
           {page.is_verified ? <VerifiedMark size={12} /> : null}
         </View>
         <AppText variant="caption" color={colors.textMuted} numberOfLines={1}>
-          {subtitle ?? `${pageTypeLabel(page.page_type)} · ${page.member_count} ${page.member_count === 1 ? 'member' : 'members'}`}
+          {subtitle ?? `${pageTypeLabel(page.page_type)} · ${audience(page)}`}
         </AppText>
       </View>
       {right}
