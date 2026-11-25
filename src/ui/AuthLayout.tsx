@@ -9,7 +9,7 @@ import { images } from './assets';
 import { AppText, Divider } from './components';
 import { enter, exit, layout, timing } from './motion';
 import { RevealContext } from './reveal';
-import { colors, radius, space } from './theme';
+import { colors, radius, space, stroke } from './theme';
 
 const LOGO_RATIO = 640 / 847;
 
@@ -85,7 +85,7 @@ export function AuthLayout({
       <View style={{ flex: 1, backgroundColor: colors.primary }}>
         <Image source={images.authSignup} style={StyleSheet.absoluteFill} contentFit="cover" />
         <LinearGradient
-          colors={['rgba(59,116,181,0.34)', colors.primary]}
+          colors={['rgba(17,17,19,0.2)', colors.ink]}
           locations={[0.1, 0.85]}
           style={StyleSheet.absoluteFill}
         />
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
     marginHorizontal: space.lg,
     backgroundColor: colors.subtle,
     borderRadius: radius.xxl,
-    borderWidth: 3,
-    borderColor: 'rgba(38,74,116,0.5)',
+    borderWidth: stroke,
+    borderColor: colors.outline,
     padding: space.xl,
     gap: space.lg,
   },

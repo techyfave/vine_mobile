@@ -36,7 +36,7 @@ export default function Onboarding() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.primary }}>
       <Image source={images.onboarding[i]} style={StyleSheet.absoluteFill} contentFit="cover" transition={duration.slow} />
-      <LinearGradient colors={['rgba(38,74,116,0.35)', 'rgba(38,74,116,0.9)']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['rgba(17,17,19,0.25)', 'rgba(17,17,19,0.88)']} style={StyleSheet.absoluteFill} />
       <View style={[styles.content, { paddingTop: insets.top + space.xxl, paddingBottom: insets.bottom + space.xl }]}>
         <Animated.View
           key={i}

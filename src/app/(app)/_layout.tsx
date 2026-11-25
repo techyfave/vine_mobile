@@ -56,7 +56,8 @@ export default function AppLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="post/[id]" options={{ title: 'Post' }} />
         <Stack.Screen name="create-post" options={{ title: 'Create Post', presentation: 'modal' }} />
-        <Stack.Screen name="menu" options={{ title: 'Menu' }} />
+        <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
+        <Stack.Screen name="messages" options={{ title: 'Messages' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings & Privacy' }} />
         <Stack.Screen name="profile/[username]" options={{ title: 'Profile' }} />
         <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />

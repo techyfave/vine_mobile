@@ -29,7 +29,7 @@ import { remoteImage } from '@/lib/media';
 import { icons } from './assets';
 import { duration, spring, timing } from './motion';
 import { useRevealFocused } from './reveal';
-import { colors, fonts, radius, shadow, space } from './theme';
+import { colors, fonts, radius, space, stroke } from './theme';
 
 // --- Typography ---------------------------------------------------------------------
 
@@ -45,15 +45,18 @@ export function AppText({
 }
 
 const type = StyleSheet.create({
-  display: { fontFamily: fonts.brand, fontSize: 28, lineHeight: 34 },
-  title: { fontFamily: fonts.brand, fontSize: 24, lineHeight: 30 },
-  heading: { fontFamily: fonts.bold, fontSize: 17, lineHeight: 22 },
-  body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21 },
-  bodyBold: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 21 },
-  caption: { fontFamily: fonts.medium, fontSize: 13, lineHeight: 17 },
-  label: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 22 },
+  /** Screen titles ("Watch", "Grapevine"): big, tight and chunky. */
+  display: { fontFamily: fonts.brand, fontSize: 40, lineHeight: 44, letterSpacing: -1.2 },
+  title: { fontFamily: fonts.brand, fontSize: 26, lineHeight: 30, letterSpacing: -0.5 },
+  /** Names, card titles, section headers. */
+  heading: { fontFamily: fonts.brand, fontSize: 17, lineHeight: 22 },
+  body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22 },
+  bodyBold: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 22 },
+  caption: { fontFamily: fonts.medium, fontSize: 13, lineHeight: 18 },
+  /** Button and chip labels. */
+  label: { fontFamily: fonts.brandMedium, fontSize: 16, lineHeight: 20 },
   /** Big welcoming lines on photo backgrounds ("Get Connected With"). */
-  hero: { fontFamily: fonts.brandMedium, fontSize: 34, lineHeight: 40 },
+  hero: { fontFamily: fonts.brand, fontSize: 38, lineHeight: 42, letterSpacing: -1 },
 });
 
 // --- Icons & avatars ------------------------------------------------------------------
@@ -69,8 +72,8 @@ export function Avatar({ uri, size = 44 }: { uri?: string | null; size?: number 
         width: size,
         height: size,
         borderRadius: size / 2,
-        borderWidth: 3,
-        borderColor: colors.primary,
+        borderWidth: stroke,
+        borderColor: colors.outline,
         backgroundColor: colors.cardMuted,
         overflow: 'hidden',
         alignItems: 'center',
@@ -248,7 +251,8 @@ export function Button({
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'outline' | 'ghost' | 'danger' | 'light';
+  /** primary: ink. accent: lime, for the one main action on a screen. */
+  variant?: 'primary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'light';
   size?: 'sm' | 'md';
   style?: StyleProp<ViewStyle>;
 }) {
@@ -271,7 +275,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={v.fg} />
       ) : (
-        <AppText variant={size === 'sm' ? 'caption' : 'bodyBold'} color={v.fg}>
+        <AppText variant="label" color={v.fg} style={size === 'sm' && styles.buttonSmText}>
           {title}
         </AppText>
       )}
@@ -280,11 +284,12 @@ export function Button({
 }
 
 const buttonVariants = {
-  primary: { bg: colors.primary, fg: colors.white, border: colors.primary },
-  outline: { bg: colors.white, fg: colors.primary, border: colors.border },
-  ghost: { bg: 'transparent', fg: colors.primary, border: 'transparent' },
+  primary: { bg: colors.ink, fg: colors.white, border: colors.ink },
+  accent: { bg: colors.accent, fg: colors.ink, border: colors.accent },
+  outline: { bg: colors.white, fg: colors.ink, border: colors.outline },
+  ghost: { bg: 'transparent', fg: colors.ink, border: 'transparent' },
   danger: { bg: colors.danger, fg: colors.white, border: colors.danger },
-  light: { bg: colors.white, fg: colors.primary, border: colors.white },
+  light: { bg: colors.white, fg: colors.ink, border: colors.white },
 };
 
 /** Round white button holding a provider logo (Continue with Apple / Google). */
@@ -312,15 +317,14 @@ export function SocialButton({
   );
 }
 
-/** Circle used in the composer's "Add to your post" row and the tab bar. */
+/** Outlined circle holding an icon (composer shortcuts, header actions). Active = lime. */
 export function RingButton({
   icon,
   label,
   onPress,
   active,
-  size = 42,
-  iconSize = 18,
-  dashed = true,
+  size = 44,
+  iconSize = 20,
 }: {
   icon: number;
   label: string;
@@ -328,7 +332,6 @@ export function RingButton({
   active?: boolean;
   size?: number;
   iconSize?: number;
-  dashed?: boolean;
 }) {
   return (
     <PressableScale
@@ -342,15 +345,14 @@ export function RingButton({
         width: size,
         height: size,
         borderRadius: size / 2,
-        borderWidth: 3,
-        borderStyle: active || !dashed ? 'solid' : 'dashed',
-        borderColor: active ? colors.primary : colors.link,
-        backgroundColor: colors.subtle,
+        borderWidth: stroke,
+        borderColor: colors.outline,
+        backgroundColor: active ? colors.accent : colors.white,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Icon source={icon} size={iconSize} />
+      <Icon source={icon} size={iconSize} tint={colors.ink} />
     </PressableScale>
   );
 }
@@ -364,15 +366,15 @@ export function LinkText({ children, onPress }: { children: ReactNode; onPress: 
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.xl, padding: space.lg, ...shadow.card },
+  card: { backgroundColor: colors.card, borderRadius: radius.xl, padding: space.lg, borderWidth: stroke, borderColor: colors.outline },
   rule: { height: 1, backgroundColor: colors.border },
   orRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   inputWrap: { justifyContent: 'center' },
   input: {
     backgroundColor: colors.white,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: stroke,
+    borderColor: colors.outline,
     paddingHorizontal: space.lg,
     paddingVertical: 14,
     fontFamily: fonts.regular,
@@ -382,20 +384,21 @@ const styles = StyleSheet.create({
   eye: { position: 'absolute', right: space.lg },
   button: {
     minHeight: 48,
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: radius.pill,
+    borderWidth: stroke,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.xl,
   },
-  buttonSm: { minHeight: 34, paddingHorizontal: space.md, borderRadius: 8 },
+  buttonSm: { minHeight: 38, paddingHorizontal: space.lg },
+  buttonSmText: { fontSize: 14, lineHeight: 18 },
   social: {
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: stroke,
+    borderColor: colors.outline,
     alignItems: 'center',
     justifyContent: 'center',
   },

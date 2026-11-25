@@ -1,58 +1,67 @@
 /**
- * Vine design tokens — taken from the Figma file and the web app's theme (vineplatform/src/app/globals.css).
- * Light only: the design has no dark mode yet.
+ * Vine design tokens: the "Pulse" direction (redesign canvas, Nov 2026).
+ * Off-white ground, near-black ink, an electric lime accent, chunky display type.
+ * Light only for now.
+ *
+ * Rules that keep Pulse sharp:
+ * - Lime is a highlight, not a background for reading: at most one or two lime things per screen
+ *   (the Create button, the active tab, a liked post, the one main action).
+ * - Text on lime is always ink. Never put lime text on a light surface.
+ * - Surfaces are flat: no drop shadows; cards get a thin ink outline instead.
  */
 export const colors = {
-  primary: '#264A74', // navy: text, primary buttons, active states
-  secondary: '#3B73B5',
-  link: '#4A90E2', // icons, links, dashed tab rings
-  softBlue: '#8BB8ED',
-  border: '#B5D1F4',
-  backgroundLight: '#D0E1F8',
-  background: '#E1ECFA', // app background
+  ink: '#111113', // text, outlines, dark surfaces (tab bar, dark cards)
+  accent: '#C6F24E', // electric lime
+  primary: '#111113', // kept for existing call sites: same as ink
+  secondary: '#3A3A40',
+  link: '#111113', // links are ink and underlined; icons are ink
+  softBlue: '#C4C4CB', // placeholder glyphs (empty avatar)
+  border: '#DCDCD6', // soft dividers and quiet borders
+  outline: '#111113', // the thin ink outline on cards, inputs, outlined buttons
+  backgroundLight: '#E8E8E3',
+  background: '#F2F2EE', // app ground
   card: '#FFFFFF',
-  cardMuted: '#ECF3FC', // inputs, search pill, notification rows
-  subtle: '#F3F7FD', // auth sheet
+  cardMuted: '#EAEAE5', // inputs, search pill, quiet fills
+  subtle: '#F7F7F4',
   white: '#FFFFFF',
-  textMuted: 'rgba(38, 74, 116, 0.5)', // #264A7480
+  textMuted: '#5C5C66', // 5.9:1 on the ground, 6.4:1 on white
+  inkMuted: '#B9B9C2', // inactive icons on dark surfaces
+  inkRaised: '#2A2A30', // active pill on dark surfaces
   live: '#E5383B',
   danger: '#C62828',
-  overlay: 'rgba(38, 74, 116, 0.5)',
-  lift: '#C9822B', // warm gold: Lift (prayer and support) accents
-  liftSoft: '#FDF4E7',
-  liftBorder: '#F2D7AE',
+  overlay: 'rgba(17, 17, 19, 0.55)',
+  lift: '#9A5B12', // warm gold for Lift (prayer and support), dark enough for text
+  liftSoft: '#FDF1DF',
+  liftBorder: '#EFD3A6',
 } as const;
 
 /**
- * Type: two rounded families that match the logo's soft, rounded "ine".
- * - Fredoka (brand): display text, titles, hero lines. Closest match to the logo lettering.
- * - Nunito (text): everything people read: body, labels, buttons, inputs.
+ * Type:
+ * - Bricolage Grotesque (brand): display text, screen titles, names, buttons. Chunky and expressive.
+ * - Inter (text): everything people read: body, captions, inputs.
  * Never set fontWeight on top of these; pick the family weight instead.
  */
 export const fonts = {
-  regular: 'Nunito_500Medium',
-  medium: 'Nunito_700Bold',
-  bold: 'Nunito_800ExtraBold',
-  brand: 'Fredoka_600SemiBold',
-  brandMedium: 'Fredoka_500Medium',
+  regular: 'Inter_400Regular',
+  medium: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  brand: 'BricolageGrotesque_800ExtraBold',
+  brandMedium: 'BricolageGrotesque_700Bold',
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28, xxxl: 40 } as const;
-export const radius = { sm: 8, md: 12, lg: 16, xl: 20, xxl: 30, pill: 999 } as const;
+export const radius = { sm: 8, md: 14, lg: 18, xl: 24, xxl: 30, pill: 999 } as const;
+/** Width of the ink outline on cards, inputs and outlined buttons. */
+export const stroke = 1.5;
 
+/** Pulse is flat; these stay only for floating layers (sheets, the tab bar over content). */
 export const shadow = {
-  card: {
-    shadowColor: '#264A74',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
+  card: {},
   bar: {
-    shadowColor: '#1F2937',
+    shadowColor: '#111113',
     shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: -6 },
-    elevation: 12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
 } as const;

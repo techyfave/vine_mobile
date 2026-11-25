@@ -1,94 +1,105 @@
+import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { type Href, router } from 'expo-router';
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { routes } from '@/lib/routes';
-import { useAuth } from '@/auth/AuthProvider';
+import { api } from '@/api/client';
+import { unwrap } from '@/api/errors';
 
-import { images } from './assets';
-import { AppText, Avatar } from './components';
-import { colors, radius, shadow, space } from './theme';
+import { icons, images } from './assets';
+import { AppText, Icon, PressableScale, RingButton } from './components';
+import { colors, space } from './theme';
 
-/** Home header from the mobile design: logo mark, search pill, avatar, menu grid. */
+/** Home header: logo, then search, messages and notifications. */
 export function TopBar() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const unread = useUnreadCount();
   return (
     <View style={[styles.wrap, { paddingTop: insets.top + space.sm }]}>
-      <View style={styles.bar}>
-        <Image source={images.logoMark} style={{ width: 34, height: 34 }} accessibilityLabel="Vine" />
-        <Pressable
-          accessibilityRole="search"
-          onPress={() => router.push('/search')}
-          style={styles.search}
-        >
-          <SearchGlyph />
-          <AppText color={colors.textMuted}>Search</AppText>
-        </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Your profile" onPress={() => user && router.push(routes.profile(user.username))}>
-          <Avatar uri={user?.profile_picture} size={34} />
-        </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Menu" onPress={() => router.push('/menu')} style={styles.menu}>
-          <View style={styles.grid}>
-            {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={styles.dot} />
-            ))}
-          </View>
-        </Pressable>
+      <Image
+        source={images.vineLogo}
+        style={{ width: 40, height: 30 }}
+        contentFit="contain"
+        tintColor={colors.ink}
+        accessibilityLabel="Vine"
+      />
+      <View style={styles.actions}>
+        <RingButton icon={icons.search} label="Search" onPress={() => router.push('/search')} />
+        <RingButton icon={icons.chatOutline} label="Messages" onPress={() => router.push('/messages' as Href)} />
+        <NotificationsButton unread={unread} />
       </View>
     </View>
   );
 }
 
-function SearchGlyph() {
+/** Ink circle; with unread notifications it shows the count in lime. */
+function NotificationsButton({ unread }: { unread: number }) {
   return (
-    <View style={{ width: 14, height: 14 }}>
-      <View style={{ width: 11, height: 11, borderRadius: 6, borderWidth: 2, borderColor: colors.textMuted }} />
-      <View
-        style={{
-          position: 'absolute',
-          right: 0,
-          bottom: 0,
-          width: 5,
-          height: 2,
-          backgroundColor: colors.textMuted,
-          transform: [{ rotate: '45deg' }],
-        }}
-      />
+    <PressableScale
+      accessibilityRole="button"
+      accessibilityLabel={unread ? `Notifications, ${unread} new` : 'Notifications'}
+      onPress={() => router.push('/notifications' as Href)}
+      scaleTo={0.9}
+      style={[styles.bell, !unread && styles.bellQuiet]}
+    >
+      {unread ? (
+        <AppText variant="label" color={colors.accent} style={{ fontSize: 15 }}>
+          {unread > 99 ? '99+' : unread}
+        </AppText>
+      ) : (
+        <Icon source={icons.bell} size={20} tint={colors.ink} />
+      )}
+    </PressableScale>
+  );
+}
+
+function useUnreadCount() {
+  const q = useQuery({
+    queryKey: ['notifications', 'unread'],
+    queryFn: async () => unwrap(await api.GET('/api/v1/notifications/unread-count/')).unread,
+    refetchInterval: 60_000,
+  });
+  return q.data ?? 0;
+}
+
+/** Big chunky title for top-level tabs ("Watch", "Grapevine", "You"), with optional actions on the right. */
+export function ScreenTitle({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.titleWrap, { paddingTop: insets.top + space.sm }]}>
+      <View style={styles.titleRow}>
+        <AppText variant="display" accessibilityRole="header">
+          {title}
+        </AppText>
+        {right}
+      </View>
+      {subtitle ? <AppText color={colors.textMuted}>{subtitle}</AppText> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: space.md, paddingBottom: space.sm, backgroundColor: colors.background },
-  bar: {
+  wrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    padding: space.sm,
-    ...shadow.card,
+    justifyContent: 'space-between',
+    paddingLeft: space.xl,
+    paddingRight: space.md,
+    paddingBottom: space.sm,
+    backgroundColor: colors.background,
   },
-  search: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    backgroundColor: colors.cardMuted,
-    borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    height: 36,
-  },
-  menu: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: colors.cardMuted,
+  actions: { flexDirection: 'row', gap: 6 },
+  bell: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  grid: { width: 14, height: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 2 },
-  dot: { width: 6, height: 6, borderRadius: 1.5, backgroundColor: colors.primary },
+  bellQuiet: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.outline },
+  titleWrap: { paddingHorizontal: space.xl, paddingBottom: space.md, gap: 2, backgroundColor: colors.background },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
 });

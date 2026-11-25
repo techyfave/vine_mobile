@@ -12,7 +12,7 @@ import { AppText, Avatar, Icon, Pop, PressableScale, Skeleton } from '@/ui/compo
 import { ActionSheet, type SheetAction } from '@/ui/ActionSheet';
 import { ImageViewer } from '@/ui/ImageViewer';
 import { PhotoCarousel } from '@/ui/PhotoCarousel';
-import { colors, radius, space } from '@/ui/theme';
+import { colors, radius, space, stroke } from '@/ui/theme';
 
 import {
   type Audience,
@@ -290,12 +290,14 @@ const PostCardBody = memo(function PostCardBody({
       <View style={styles.actions}>
         <Action
           icon={post.my_reaction ? icons.heart : icons.heartOutline}
-          label={`Likes (${totalReactions(post)})`}
+          label={`Like, ${totalReactions(post)} likes`}
+          count={totalReactions(post)}
           onPress={() => like.mutate(post)}
           active={Boolean(post.my_reaction)}
           pop
         />
-        <Action icon={icons.comment} label={`Comments (${post.comment_count})`} onPress={open} />
+        <Action icon={icons.chatOutline} label={`Comments, ${post.comment_count}`} count={post.comment_count} onPress={open} />
+        <View style={{ flex: 1 }} />
         <Action
           icon={icons.shared}
           label={post.repost_count ? `Share (${post.repost_count})` : 'Share'}
@@ -321,39 +323,39 @@ const PostCardBody = memo(function PostCardBody({
   );
 });
 
+/** Outlined pill (with a count) or circle (icon only). Active = lime fill. */
 function Action({
   icon,
   label,
+  count,
   onPress,
   active,
   pop = false,
 }: {
   icon: number;
   label: string;
+  count?: number;
   onPress: () => void;
   active?: boolean;
   pop?: boolean;
 }) {
+  const glyph = <Icon source={icon} size={18} tint={colors.ink} />;
   return (
     <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      hitSlop={8}
+      hitSlop={4}
       scaleTo={0.92}
-      style={styles.action}
+      style={[styles.action, count === undefined && styles.actionRound, active && styles.actionOn]}
     >
-      {pop ? (
-        <Pop active={Boolean(active)}>
-          <Icon source={icon} size={16} />
-        </Pop>
-      ) : (
-        <Icon source={icon} size={16} />
-      )}
-      <AppText variant="caption" color={active ? colors.primary : colors.textMuted}>
-        {label}
-      </AppText>
+      {pop ? <Pop active={Boolean(active)}>{glyph}</Pop> : glyph}
+      {count !== undefined ? (
+        <AppText variant="label" style={{ fontSize: 14 }}>
+          {count}
+        </AppText>
+      ) : null}
     </PressableScale>
   );
 }
@@ -380,12 +382,31 @@ export function PostCardSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.xl, paddingHorizontal: space.md, paddingVertical: space.lg, gap: space.lg },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radius.xl,
+    borderWidth: stroke,
+    borderColor: colors.outline,
+    padding: space.md,
+    gap: space.md,
+  },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   author: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: { paddingHorizontal: 6, paddingVertical: 2 },
   repostLine: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.md },
-  actions: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', rowGap: space.sm },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    borderWidth: stroke,
+    borderColor: colors.outline,
+    backgroundColor: colors.white,
+  },
+  actionRound: { width: 44, paddingHorizontal: 0, justifyContent: 'center' },
+  actionOn: { backgroundColor: colors.accent, borderColor: colors.accent },
 });

@@ -11,7 +11,7 @@ import { EmbeddedPost } from '@/features/feed/EmbeddedPost';
 import { useKeyboardHeight } from '@/lib/keyboard';
 import { displayName } from '@/lib/time';
 import { AppText, Avatar, Button, ErrorText } from '@/ui/components';
-import { colors, fonts, radius, space } from '@/ui/theme';
+import { colors, fonts, radius, space, stroke } from '@/ui/theme';
 
 /** Repost with your own words. The original shows underneath, the way your followers will see it. */
 export default function QuoteRepost() {
@@ -79,7 +79,7 @@ export default function QuoteRepost() {
 
 const styles = StyleSheet.create({
   author: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 4 },
+  chip: { borderWidth: stroke, borderColor: colors.outline, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 4 },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   body: { minHeight: 110, fontFamily: fonts.regular, fontSize: 18, color: colors.primary, textAlignVertical: 'top' },
 });
