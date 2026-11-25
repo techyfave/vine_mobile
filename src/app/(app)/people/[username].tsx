@@ -9,7 +9,7 @@ import { unwrap } from '@/api/errors';
 import { PersonRow } from '@/features/people/PersonRow';
 import { AppText, Card, PressableScale, Skeleton } from '@/ui/components';
 import { enter, staggerDelay } from '@/ui/motion';
-import { colors, radius, space } from '@/ui/theme';
+import { colors, radius, space, stroke } from '@/ui/theme';
 
 type Tab = 'followers' | 'following';
 
@@ -44,7 +44,7 @@ export default function People() {
             scaleTo={0.96}
             style={[styles.tab, tab === t && styles.tabOn]}
           >
-            <AppText variant="caption" color={tab === t ? colors.white : colors.primary}>
+            <AppText variant="label" style={{ fontSize: 14 }} color={tab === t ? colors.accent : colors.ink}>
               {t === 'followers' ? 'Followers' : 'Following'}
             </AppText>
           </PressableScale>
@@ -81,6 +81,6 @@ export default function People() {
 
 const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.md, paddingTop: space.md },
-  tab: { paddingHorizontal: space.lg, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: colors.card },
-  tabOn: { backgroundColor: colors.primary },
+  tab: { paddingHorizontal: space.lg, minHeight: 40, justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: stroke, borderColor: colors.outline },
+  tabOn: { backgroundColor: colors.ink, borderColor: colors.ink },
 });

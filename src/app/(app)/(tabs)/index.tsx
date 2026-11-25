@@ -11,17 +11,16 @@ import { Composer } from '@/features/feed/Composer';
 import { PostCard, PostCardSkeleton } from '@/features/feed/PostCard';
 import { WelcomeModal } from '@/features/feed/WelcomeModal';
 import { AppText, Button, Card, PressableScale } from '@/ui/components';
+import { TAB_BAR_SPACE } from '@/ui/TabBar';
 import { TopBar } from '@/ui/TopBar';
 import { enter, exit, layout, staggerDelay } from '@/ui/motion';
-import { colors, radius, space } from '@/ui/theme';
-
-const TAB_BAR_SPACE = 110;
+import { colors, radius, space, stroke } from '@/ui/theme';
 
 type FeedTab = 'home' | 'lifts' | 'testimonies';
 const TABS: { value: FeedTab; label: string }[] = [
   { value: 'home', label: 'Home' },
-  { value: 'lifts', label: '🙏 Lifts' },
-  { value: 'testimonies', label: '🙌 Testimonies' },
+  { value: 'lifts', label: 'Lifts' },
+  { value: 'testimonies', label: 'Testimonies' },
 ];
 
 export default function HomeFeed() {
@@ -75,7 +74,7 @@ export default function HomeFeed() {
                   scaleTo={0.96}
                   style={[styles.tab, tab === t.value && styles.tabOn]}
                 >
-                  <AppText variant="caption" color={tab === t.value ? colors.white : colors.primary}>
+                  <AppText variant="label" style={{ fontSize: 15 }} color={tab === t.value ? colors.accent : colors.ink}>
                     {t.label}
                   </AppText>
                 </PressableScale>
@@ -125,13 +124,17 @@ const EMPTY: Record<FeedTab, { title: string; body: string }> = {
 };
 
 const styles = StyleSheet.create({
-  tabs: { flexDirection: 'row', gap: space.sm },
-  tab: {
-    paddingHorizontal: space.md,
-    paddingVertical: 6,
+  tabs: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    gap: 4,
+    padding: 4,
     borderRadius: radius.pill,
+    borderWidth: stroke,
+    borderColor: colors.outline,
     backgroundColor: colors.card,
   },
-  tabOn: { backgroundColor: colors.primary },
+  tab: { height: 40, justifyContent: 'center', paddingHorizontal: space.lg, borderRadius: radius.pill },
+  tabOn: { backgroundColor: colors.ink },
   liftIntro: { gap: space.sm, backgroundColor: colors.liftSoft, borderWidth: 1, borderColor: colors.liftBorder },
 });

@@ -44,4 +44,15 @@ export const icons = {
   settingsNav: require('../../assets/icons/settings_nav.svg'),
   helpNav: require('../../assets/icons/help_nav.svg'),
   groupsNav: require('../../assets/icons/groups_nav.svg'),
+  // Pulse stroke set (tint at runtime with `tint`).
+  tabHome: require('../../assets/icons/tab-home.svg'),
+  tabHomeOn: require('../../assets/icons/tab-home-on.svg'),
+  tabWatch: require('../../assets/icons/tab-watch.svg'),
+  tabWatchOn: require('../../assets/icons/tab-watch-on.svg'),
+  tabGrapevine: require('../../assets/icons/tab-grapevine.svg'),
+  tabGrapevineOn: require('../../assets/icons/tab-grapevine-on.svg'),
+  plus: require('../../assets/icons/plus.svg'),
+  search: require('../../assets/icons/search.svg'),
+  bell: require('../../assets/icons/bell.svg'),
+  chatOutline: require('../../assets/icons/chat-outline.svg'),
 };

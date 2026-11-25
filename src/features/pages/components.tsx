@@ -7,7 +7,7 @@ import { remoteImage } from '@/lib/media';
 import { routes } from '@/lib/routes';
 import { timeAgo } from '@/lib/time';
 import { AppText, PressableScale } from '@/ui/components';
-import { colors, radius, space } from '@/ui/theme';
+import { colors, radius, space, stroke } from '@/ui/theme';
 
 import type { Announcement, PageCard } from './api';
 
@@ -130,7 +130,7 @@ export function Tabs<T extends string>({
             onPress={() => onChange(t.key)}
             style={[styles.tab, active && styles.tabActive]}
           >
-            <AppText variant="caption" color={active ? colors.white : colors.primary}>
+            <AppText variant="label" style={{ fontSize: 14 }} color={active ? colors.accent : colors.ink}>
               {t.label}
             </AppText>
           </PressableScale>
@@ -183,12 +183,12 @@ export function AnnouncementCard({ item, onPage }: { item: Announcement; onPage:
 const styles = StyleSheet.create({
   logo: { backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   verified: { backgroundColor: colors.link, alignItems: 'center', justifyContent: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, padding: space.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, padding: space.md, borderWidth: stroke, borderColor: colors.outline },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   chip: { borderRadius: radius.pill, paddingHorizontal: space.sm, paddingVertical: 2, alignSelf: 'flex-start' },
   tabs: { flexDirection: 'row', gap: space.sm },
-  tab: { borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 7, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-  tabActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  announcement: { backgroundColor: colors.card, borderRadius: radius.xl, padding: space.lg, gap: space.sm, borderLeftWidth: 4, borderLeftColor: colors.link },
+  tab: { borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 7, backgroundColor: colors.card, borderWidth: stroke, borderColor: colors.outline },
+  tabActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  announcement: { backgroundColor: colors.card, borderRadius: radius.xl, padding: space.lg, gap: space.sm, borderWidth: stroke, borderColor: colors.outline },
   announcementHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });

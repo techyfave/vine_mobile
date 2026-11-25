@@ -15,7 +15,7 @@ import type { LiftMode } from '@/features/feed/api';
 import { PageLogo } from '@/features/pages/components';
 import { AppText, Avatar, Button, ErrorText, Icon, PressableScale } from '@/ui/components';
 import { enter, exit, layout } from '@/ui/motion';
-import { colors, fonts, radius, space } from '@/ui/theme';
+import { colors, fonts, radius, space, stroke } from '@/ui/theme';
 
 const MAX_PHOTOS = 6;
 
@@ -245,7 +245,7 @@ export default function CreatePost() {
 
 const styles = StyleSheet.create({
   author: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 4 },
+  chip: { borderWidth: stroke, borderColor: colors.outline, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 4 },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   body: { minHeight: 140, fontFamily: fonts.regular, fontSize: 18, color: colors.primary, textAlignVertical: 'top' },
   scripture: {

@@ -6,7 +6,7 @@ import { errorMessage } from '@/api/errors';
 import { type AudienceInput, can, useCreateAnnouncement, useOrganization, usePage, usePageMe } from '@/features/pages/api';
 import { useKeyboardHeight } from '@/lib/keyboard';
 import { AppText, Button, Card, ErrorText, Input } from '@/ui/components';
-import { colors, radius, space } from '@/ui/theme';
+import { colors, radius, space, stroke } from '@/ui/theme';
 
 type Kind = AudienceInput['kind'];
 type Role = NonNullable<AudienceInput['role']>;
@@ -188,6 +188,6 @@ const styles = StyleSheet.create({
   radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: colors.border },
   radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  chip: { borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, paddingHorizontal: space.md, paddingVertical: 6, backgroundColor: colors.white },
+  chip: { borderRadius: radius.pill, borderWidth: stroke, borderColor: colors.outline, paddingHorizontal: space.md, paddingVertical: 6, backgroundColor: colors.white },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
 });

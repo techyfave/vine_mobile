@@ -8,7 +8,7 @@ import { errorMessage, unwrap } from '@/api/errors';
 import { type Audience, useEditPost } from '@/features/feed/api';
 import { useKeyboardHeight } from '@/lib/keyboard';
 import { AppText, Button, ErrorText } from '@/ui/components';
-import { colors, fonts, radius, space } from '@/ui/theme';
+import { colors, fonts, radius, space, stroke } from '@/ui/theme';
 
 /** Edit your own post's text and audience. Photos can't be swapped after posting. */
 export default function EditPost() {
@@ -83,6 +83,6 @@ export default function EditPost() {
 
 const styles = StyleSheet.create({
   body: { minHeight: 160, fontFamily: fonts.regular, fontSize: 18, color: colors.primary, textAlignVertical: 'top' },
-  pill: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 6 },
+  pill: { borderWidth: stroke, borderColor: colors.outline, borderRadius: radius.pill, paddingHorizontal: space.md, paddingVertical: 6 },
   pillOn: { backgroundColor: colors.primary, borderColor: colors.primary },
 });
